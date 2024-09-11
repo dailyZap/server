@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "main": "index.js",
   "repository": "https://github.com/dailyZap/server.git",
-  "author": "Hannes Rüger <hannes@rueger.events>",
   "license": "MIT",
   "packageManager": "yarn@4.4.1",
   "dependencies": {
