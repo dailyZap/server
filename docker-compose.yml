@@ -8,3 +8,17 @@ services:
     volumes:
       - ~/dev_db:/var/lib/postgresql/data
     env_file: .env
+  minio:
+    image: minio/minio:RELEASE.2024-09-09T16-59-28Z
+    ports:
+      - ${S3_PORT}:9000
+      - ${MINIO_CONSOLE_PORT}:9001
+    volumes:
+      - ~/dev_minio:/data
+    command: server --console-address ":${MINIO_CONSOLE_PORT}" /data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    env_file: .env

@@ -30,5 +30,6 @@ model User {
   lastName     String
   invites      Invite[]
   twoFaCode    String?
+  loginToken   String?
   sessionToken String?
 }

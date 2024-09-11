@@ -12,5 +12,8 @@ build
 .env
 
 # Dev DB
-dev-db/*
-!dev-db/.gitkeep
+/dev-db/*
+!/dev-db/.gitkeep
+
+# Dev SMTP
+/dev-smtp
