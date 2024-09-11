@@ -10,3 +10,7 @@ build
 
 # Environment variables
 .env
+
+# Dev DB
+dev-db/*
+!dev-db/.gitkeep

@@ -5,10 +5,30 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["omitApi"]
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+model Invite {
+  id     String  @id
+  code   String
+  user   User?   @relation(fields: [userId], references: [id])
+  userId String?
+}
+
+model User {
+  id           String   @id
+  updatedAt    DateTime @updatedAt
+  handle       String   @unique
+  email        String   @unique
+  firstName    String
+  lastName     String
+  invites      Invite[]
+  twoFaCode    String?
+  sessionToken String?
 }
