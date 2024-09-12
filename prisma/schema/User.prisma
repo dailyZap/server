@@ -7,6 +7,9 @@ model User {
   lastName      String
   invite        Invite?
   notifications Notification[]
+  zaps          Zap[]
+  comments      Comment[]
+  reactions     Reaction[]
   twoFaCode     String?
   deviceToken   String?        @unique
   loginToken    String?        @unique

@@ -1,0 +1,13 @@
+model Zap {
+  id String @id
+
+  author   User   @relation(fields: [authorId], references: [id])
+  authorId String
+
+  moment   Moment @relation(fields: [momentId], references: [id])
+  momentId String
+
+  comments  Comment[]
+  reactions Reaction[]
+  uploaded  Boolean
+}

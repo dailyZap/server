@@ -1,0 +1,7 @@
+model Moment {
+  id String @id
+
+  timestamp DateTime
+
+  zaps Zap[]
+}

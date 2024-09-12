@@ -20,7 +20,7 @@ export const MomentSchema = {
 			type: "string"
 		},
 		timestamp: {
-			type: "string",
+			type: "integer",
 			format: "date-time"
 		}
 	},

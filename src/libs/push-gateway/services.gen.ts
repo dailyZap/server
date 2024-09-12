@@ -41,6 +41,6 @@ export const getMoments = <ThrowOnError extends boolean = false>(
 ) => {
 	return (options?.client ?? client).get<GetMomentsResponse, GetMomentsError, ThrowOnError>({
 		...options,
-		url: "/moments"
+		url: "/v1/moments"
 	});
 };

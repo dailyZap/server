@@ -1,0 +1,18 @@
+enum ReactionType {
+  THUMBS_UP
+  GRINNING_FACE_WITH_BIG_EYES
+  ASTONISHED_FACE
+  FACE_WITH_TEARS_OF_JOY
+  SMILING_FACE_WITH_HEART_EYES
+  HIGH_VOLTAGE
+}
+
+model Reaction {
+  id       String       @id
+  author   User         @relation(fields: [authorId], references: [id])
+  authorId String
+  zap      Zap          @relation(fields: [zapId], references: [id])
+  zapId    String
+  type     ReactionType
+  uploaded Boolean?
+}

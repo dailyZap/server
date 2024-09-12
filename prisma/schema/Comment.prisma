@@ -1,0 +1,10 @@
+model Comment {
+  id String @id
+
+  author   User   @relation(fields: [authorId], references: [id])
+  authorId String
+  zap      Zap    @relation(fields: [zapId], references: [id])
+  zapId    String
+
+  text String
+}

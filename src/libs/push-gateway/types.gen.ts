@@ -7,7 +7,7 @@ export type Notification = {
 
 export type Moment = {
 	id: string;
-	timestamp: string;
+	timestamp: number;
 };
 
 export type SendNotificationsData = {
@@ -37,11 +37,7 @@ export type GetMomentsData = {
 		/**
 		 * Return moments after this timestamp
 		 */
-		after?: string;
-		/**
-		 * Return moments after this id
-		 */
-		afterId?: string;
+		after?: number;
 		/**
 		 * Limit the number of moments to return
 		 */
