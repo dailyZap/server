@@ -192,7 +192,7 @@ export class AuthController extends Controller {
 			toUUID(fromString(userParams.loginToken))
 		);
 		const now = new Date();
-		if (now.getTime() - loginTokenCreationDate.getTime() > 10000)
+		if (now.getTime() - loginTokenCreationDate.getTime() > 15 * 60 * 1000)
 			return forbidden(403, { reason: "Login Token Expired" });
 
 		if (user.twoFaCode !== userParams.twoFaCode)
