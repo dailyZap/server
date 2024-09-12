@@ -6,8 +6,8 @@ import { app } from "./app";
 import { ensureAndGetServerInvite, getInviteUrl } from "./helpers/invite";
 import { Buckets } from "./enums/Buckets";
 import { storage } from "./helpers/storage";
-import { checkAuth, client, getMoments } from "./libs/push-gateway/services.gen";
-import { prisma } from "./helpers/db";
+import { checkAuth, client } from "./libs/push-gateway/services.gen";
+import { updateMomentsFromPushGateway } from "./helpers/moments";
 
 const port = process.env.PORT || 80;
 
@@ -43,24 +43,11 @@ async function main() {
 	} else {
 		console.log("Connected to push gateway");
 	}
-	const lastMoment = await prisma.moment.findFirst({
-		orderBy: {
-			timestamp: "desc"
-		}
-	});
 
-	const moments = await getMoments({
-		query: { after: lastMoment ? lastMoment.timestamp.getTime() : undefined }
-	});
+	await updateMomentsFromPushGateway();
 
-	for (const moment of moments.data?.moments!) {
-		await prisma.moment.create({
-			data: {
-				id: moment.id,
-				timestamp: new Date(moment.timestamp)
-			}
-		});
-	}
+	// update moments every 24 hours
+	setInterval(updateMomentsFromPushGateway, 24 * 60 * 60 * 1000);
 
 	// run app
 	app.listen(port, () => console.log(`Example app listening at http://localhost:${port}`));
