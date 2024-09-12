@@ -5,6 +5,11 @@ export type Notification = {
 	notificationId: string;
 };
 
+export type Moment = {
+	id: string;
+	timestamp: string;
+};
+
 export type SendNotificationsData = {
 	body?: {
 		notifications?: Array<Notification>;
@@ -24,5 +29,30 @@ export type CheckAuthResponse = {
 };
 
 export type CheckAuthError = {
+	error?: string;
+};
+
+export type GetMomentsData = {
+	query?: {
+		/**
+		 * Return moments after this timestamp
+		 */
+		after?: string;
+		/**
+		 * Return moments after this id
+		 */
+		afterId?: string;
+		/**
+		 * Limit the number of moments to return
+		 */
+		limit?: number;
+	};
+};
+
+export type GetMomentsResponse = {
+	moments?: Array<Moment>;
+};
+
+export type GetMomentsError = {
 	error?: string;
 };

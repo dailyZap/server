@@ -6,7 +6,10 @@ import type {
 	SendNotificationsError,
 	SendNotificationsResponse,
 	CheckAuthError,
-	CheckAuthResponse
+	CheckAuthResponse,
+	GetMomentsData,
+	GetMomentsError,
+	GetMomentsResponse
 } from "./types.gen";
 
 export const client = createClient(createConfig());
@@ -20,7 +23,7 @@ export const sendNotifications = <ThrowOnError extends boolean = false>(
 		ThrowOnError
 	>({
 		...options,
-		url: "/v1/send"
+		url: "/v1/notifications"
 	});
 };
 
@@ -30,5 +33,14 @@ export const checkAuth = <ThrowOnError extends boolean = false>(
 	return (options?.client ?? client).get<CheckAuthResponse, CheckAuthError, ThrowOnError>({
 		...options,
 		url: "/v1/auth/check"
+	});
+};
+
+export const getMoments = <ThrowOnError extends boolean = false>(
+	options?: Options<GetMomentsData, ThrowOnError>
+) => {
+	return (options?.client ?? client).get<GetMomentsResponse, GetMomentsError, ThrowOnError>({
+		...options,
+		url: "/moments"
 	});
 };

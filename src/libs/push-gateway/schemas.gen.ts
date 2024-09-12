@@ -13,3 +13,18 @@ export const NotificationSchema = {
 	type: "object",
 	additionalProperties: false
 } as const;
+
+export const MomentSchema = {
+	properties: {
+		id: {
+			type: "string"
+		},
+		timestamp: {
+			type: "string",
+			format: "date-time"
+		}
+	},
+	required: ["id", "timestamp"],
+	type: "object",
+	additionalProperties: false
+} as const;
