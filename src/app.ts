@@ -2,6 +2,7 @@ import { RegisterRoutes } from "../build/routes";
 import swaggerUi from "swagger-ui-express";
 import express, { json, urlencoded, Response as ExResponse, Request as ExRequest } from "express";
 import { prisma } from "./helpers/db";
+import { UnauthorizedError } from "./helpers/error";
 
 export const app = express();
 
@@ -28,7 +29,9 @@ app.get("/invite/:code", async (req: ExRequest, res: ExResponse) => {
 
 	const isDefaultPort = process.env.PORT == "80" || process.env.PORT == "443";
 	return res.send(
-		`<a href='dailyzap://invite/${process.env.HOST}${isDefaultPort ? "" : ":" + process.env.PORT}/${req.params.code}'>Click here to register</a>`
+		`<a href='dailyzap://invite/${process.env.HOST}${isDefaultPort ? "" : ":" + process.env.PORT}/${
+			req.params.code
+		}'>Click here to register</a>`
 	);
 });
 
@@ -37,3 +40,26 @@ app.use("/docs", swaggerUi.serve, async (_req: ExRequest, res: ExResponse) => {
 });
 
 RegisterRoutes(app);
+
+app.use(
+	(
+		err: unknown,
+		_req: express.Request,
+		res: express.Response,
+		next: express.NextFunction
+	): express.Response | void => {
+		console.error(err);
+		if (err instanceof UnauthorizedError) {
+			return res.status(401).json({
+				message: "Unauthorized"
+			});
+		}
+		if (err instanceof Error) {
+			return res.status(500).json({
+				message: "Internal Server Error"
+			});
+		}
+
+		next();
+	}
+);

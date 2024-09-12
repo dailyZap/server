@@ -18,7 +18,7 @@ model Invite {
   id     String  @id
   code   String
   user   User?   @relation(fields: [userId], references: [id])
-  userId String?
+  userId String? @unique
 }
 
 model User {
@@ -28,8 +28,8 @@ model User {
   email        String   @unique
   firstName    String
   lastName     String
-  invites      Invite[]
+  invite       Invite?
   twoFaCode    String?
-  loginToken   String?
-  sessionToken String?
+  loginToken   String?  @unique
+  sessionToken String?  @unique
 }

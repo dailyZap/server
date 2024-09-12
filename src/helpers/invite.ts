@@ -24,3 +24,10 @@ export async function ensureAndGetServerInvite() {
 		}
 	});
 }
+
+export function getInviteUrl(inviteCode: string) {
+	const isSSL = process.env.SSL == "true";
+	const isDefaultPort = process.env.PORT == "80" || process.env.PORT == "443";
+
+	return `${isSSL ? "https" : "http"}://${process.env.HOST}${isDefaultPort ? "" : ":" + process.env.PORT}/invite/${inviteCode}`;
+}
