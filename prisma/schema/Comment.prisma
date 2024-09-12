@@ -6,5 +6,5 @@ model Comment {
   zap      Zap    @relation(fields: [zapId], references: [id])
   zapId    String
 
-  text String
+  content String
 }

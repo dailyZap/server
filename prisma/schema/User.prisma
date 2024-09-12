@@ -10,6 +10,8 @@ model User {
   zaps          Zap[]
   comments      Comment[]
   reactions     Reaction[]
+  friendsA      User[]         @relation("Friendship")
+  friendsB      User[]         @relation("Friendship")
   twoFaCode     String?
   deviceToken   String?        @unique
   loginToken    String?        @unique

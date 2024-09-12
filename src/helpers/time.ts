@@ -1,3 +1,5 @@
+import { fromString, toUUID } from "typeid-js";
+
 export function extractTimestampFromUUIDv7(uuid: string): Date {
 	// split the UUID into its components
 	const parts = uuid.split("-");
@@ -13,4 +15,13 @@ export function extractTimestampFromUUIDv7(uuid: string): Date {
 	const date = new Date(timestampInMilliseconds);
 
 	return date;
+}
+
+export function extractTimeFromTypeIdAsDate(typeId: string, prefix?: string): Date {
+	const uuid = toUUID(fromString(typeId, prefix));
+	return extractTimestampFromUUIDv7(uuid);
+}
+
+export function extractTimeFromTypeIdAsNumber(typeId: string, prefix?: string): number {
+	return extractTimeFromTypeIdAsDate(typeId, prefix).getTime();
 }
