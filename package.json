@@ -19,7 +19,8 @@
 	"scripts": {
 		"start": "concurrently \"nodemon\" \"nodemon -x tsoa spec-and-routes\"",
 		"build": "tsoa spec-and-routes && tsc",
-		"format": "prettier --write ."
+		"format": "prettier --write .",
+		"getPGApi": "./get-push-gateway-api-schema.sh"
 	},
 	"devDependencies": {
 		"@hey-api/openapi-ts": "^0.53.0",
