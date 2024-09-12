@@ -1,6 +1,6 @@
 import { Buckets } from "../../../enums/Buckets";
 import { storage } from "../../../helpers/storage";
-import { Controller, Get, Route, Security, Tags, Request, Put } from "tsoa";
+import { Controller, Get, Route, Security, Tags, Request, Put, Produces } from "tsoa";
 import { RequestWithUser } from "src/helpers/auth";
 import { prisma } from "../../../helpers/db";
 import { getInviteUrl } from "../../../helpers/invite";
@@ -22,6 +22,17 @@ interface PictureResponseProps {
 @Route("v1/profile")
 @Security("sessionToken")
 export class ProfileController extends Controller {
+	@Get("picture")
+	@Produces("image/*")
+	public async getProfilePicture(@Request() request: RequestWithUser): Promise<Buffer> {
+		this.setStatus(302);
+		this.setHeader(
+			"Location",
+			await storage.presignedGetObject(Buckets.AVATARS, `${request.user.user.id}.jpg`, 15 * 60)
+		);
+		return Buffer.from([]);
+	}
+
 	@Put("picture")
 	public async setProfilePicture(
 		@Request() request: RequestWithUser
