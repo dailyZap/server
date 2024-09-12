@@ -1,4 +1,5 @@
 export enum Prefix {
 	INVITE = "invite",
-	USER = "user"
+	USER = "user",
+	NOTIFICATION = "notification"
 }

@@ -1,0 +1,14 @@
+model User {
+  id            String         @id
+  updatedAt     DateTime       @updatedAt
+  handle        String         @unique
+  email         String         @unique
+  firstName     String
+  lastName      String
+  invite        Invite?
+  notifications Notification[]
+  twoFaCode     String?
+  deviceToken   String?        @unique
+  loginToken    String?        @unique
+  sessionToken  String?        @unique
+}

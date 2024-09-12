@@ -28,6 +28,7 @@ interface UserCreationParams {
 interface UserTwoFaParams {
 	loginToken: string;
 	twoFaCode: string;
+	deviceToken: string;
 }
 
 interface UserLoginParams {
@@ -205,6 +206,7 @@ export class AuthController extends Controller {
 			},
 			data: {
 				sessionToken,
+				deviceToken: userParams.deviceToken,
 				loginToken: null,
 				twoFaCode: null
 			}

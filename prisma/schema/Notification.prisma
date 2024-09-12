@@ -1,0 +1,19 @@
+enum NotificationType {
+  ZAP_NOW
+  FRIEND_REQUEST
+  NEW_DAILY_ZAP
+  NEW_REACTION
+  NEW_COMMENT
+  TAGGED
+}
+
+model Notification {
+  id     String @id
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
+
+  type     NotificationType
+  targetId String?
+  title    String
+  content  String
+}
