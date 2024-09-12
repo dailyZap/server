@@ -31,11 +31,16 @@ async function main() {
 		return request;
 	});
 
-	const response = await checkAuth()
-	
+	const response = await checkAuth().catch(() => {
+		console.error("Failed to connect to push gateway");
+		process.exit(1);
+	});
+
 	if (response.error) {
 		console.error("Failed to authenticate with push gateway");
 		process.exit(1);
+	} else {
+		console.log("Connected to push gateway");
 	}
 
 	// run app
