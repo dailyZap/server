@@ -15,4 +15,14 @@ export type SendNotificationsResponse = {
 	success?: boolean;
 };
 
-export type SendNotificationsError = unknown;
+export type SendNotificationsError = {
+	error?: string;
+};
+
+export type CheckAuthResponse = {
+	success?: boolean;
+};
+
+export type CheckAuthError = {
+	error?: string;
+};

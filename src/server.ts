@@ -6,7 +6,7 @@ import { app } from "./app";
 import { ensureAndGetServerInvite, getInviteUrl } from "./helpers/invite";
 import { Buckets } from "./enums/Buckets";
 import { storage } from "./helpers/storage";
-import { client } from "./libs/push-gateway/services.gen";
+import { checkAuth, client } from "./libs/push-gateway/services.gen";
 
 const port = process.env.PORT || 80;
 
@@ -26,10 +26,17 @@ async function main() {
 		baseUrl: process.env.PUSH_GATEWAY_URL!
 	});
 
-	client.interceptors.request.use((request) => {
+	client.interceptors.request.use((request: any) => {
 		request.headers.set("X-API-KEY", process.env.PUSH_GATEWAY_API_KEY!);
 		return request;
 	});
+
+	const response = await checkAuth()
+	
+	if (response.error) {
+		console.error("Failed to authenticate with push gateway");
+		process.exit(1);
+	}
 
 	// run app
 	app.listen(port, () => console.log(`Example app listening at http://localhost:${port}`));

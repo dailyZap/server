@@ -4,7 +4,9 @@ import { createClient, createConfig, type Options } from "@hey-api/client-fetch"
 import type {
 	SendNotificationsData,
 	SendNotificationsError,
-	SendNotificationsResponse
+	SendNotificationsResponse,
+	CheckAuthError,
+	CheckAuthResponse
 } from "./types.gen";
 
 export const client = createClient(createConfig());
@@ -19,5 +21,14 @@ export const sendNotifications = <ThrowOnError extends boolean = false>(
 	>({
 		...options,
 		url: "/v1/send"
+	});
+};
+
+export const checkAuth = <ThrowOnError extends boolean = false>(
+	options?: Options<unknown, ThrowOnError>
+) => {
+	return (options?.client ?? client).get<CheckAuthResponse, CheckAuthError, ThrowOnError>({
+		...options,
+		url: "/v1/auth/check"
 	});
 };
