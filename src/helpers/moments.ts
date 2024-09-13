@@ -12,6 +12,8 @@ export async function updateMomentsFromPushGateway() {
 		query: { after: lastMoment ? lastMoment.timestamp.getTime() : undefined }
 	});
 
+	if (!moments.data?.moments) return;
+
 	for (const moment of moments.data?.moments!) {
 		await prisma.moment.create({
 			data: {

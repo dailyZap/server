@@ -16,10 +16,11 @@ import {
 	Get,
 	Produces,
 	Res,
-	TsoaResponse
+	TsoaResponse,
+	Post
 } from "tsoa";
 import { v7 } from "uuid";
-import { fromUUID } from "typeid-js";
+import { fromUUID, typeid } from "typeid-js";
 
 interface ZapResponseProps {
 	zapId: string;
@@ -121,6 +122,44 @@ export class ZapController extends Controller {
 		});
 	}
 
+	@Post("{id}/repost")
+	public async repostZap(
+		@Request() request: RequestWithUser,
+		@Path() id: string,
+		@Res() forbidden: TsoaResponse<403, { reason: string }>
+	): Promise<void> {
+		const currentMoment = await prisma.moment.findFirstOrThrow({
+			where: {
+				timestamp: {
+					lt: new Date()
+				}
+			},
+			orderBy: {
+				timestamp: "desc"
+			}
+		});
+
+		const zap = await prisma.zap.findFirstOrThrow({
+			where: {
+				id
+			}
+		});
+
+		if (currentMoment.id !== zap.momentId) {
+			return forbidden(403, { reason: "The Day the Zap was taken on is already over" });
+		}
+
+		await prisma.zap.create({
+			data: {
+				id: typeid(Prefix.ZAP).toString(),
+				momentId: zap.momentId,
+				authorId: request.user.user.id,
+				repostId: zap.id,
+				uploaded: true
+			}
+		});
+	}
+
 	@Get("{id}/picture/{side}")
 	@Produces("image/*")
 	public async getProfilePicture(
@@ -130,9 +169,12 @@ export class ZapController extends Controller {
 		@Res() unauthorized: TsoaResponse<401, { reason: string }>,
 		@Res() forbidden: TsoaResponse<403, { reason: string }>
 	): Promise<Buffer> {
-		const zap = await prisma.zap.findUniqueOrThrow({
+		let zap = await prisma.zap.findUniqueOrThrow({
 			where: {
 				id
+			},
+			include: {
+				repost: true
 			}
 		});
 
@@ -162,9 +204,9 @@ export class ZapController extends Controller {
 		this.setHeader(
 			"Location",
 			await getPresignedZapUrl({
-				momentId: zap.momentId,
-				userId: zap.authorId,
-				zapId: zap.id,
+				momentId: zap.repost ? zap.repost.momentId : zap.momentId,
+				userId: zap.repost ? zap.repost.authorId : zap.authorId,
+				zapId: zap.repost ? zap.repost.id : zap.id,
 				type: side
 			})
 		);

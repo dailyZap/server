@@ -28,10 +28,10 @@ interface ZapImageProperties {
 }
 
 export async function getPresignedReactionUrl(props: ReactionImageProperties) {
-	return await storage.presignedGetObject(Buckets.REACTIONS, getReactionUrl(props), 15 * 60);
+	return await storage.presignedGetObject(Buckets.REACTIONS, getReactionPath(props), 15 * 60);
 }
 
-export function getReactionUrl(props: ReactionImageProperties) {
+export function getReactionPath(props: ReactionImageProperties) {
 	return `${props.authorId}/${props.reactionType}/${props.reactionImageId}.jpg`;
 }
 
@@ -49,4 +49,8 @@ export function getProfilePictureUrl(userId: string, version: number) {
 
 export function getZapUrl(zapId: string, type: ZapImageType) {
 	return `${isSSL ? "https" : "http"}://${process.env.HOST}${isDefaultPort ? "" : ":" + process.env.PORT}/v1/zaps/${zapId}/picture/${type}`;
+}
+
+export function getReactionUrl(reactionId: string) {
+	return `${isSSL ? "https" : "http"}://${process.env.HOST}${isDefaultPort ? "" : ":" + process.env.PORT}/v1/reactions/${reactionId}/picture`;
 }

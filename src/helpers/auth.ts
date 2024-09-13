@@ -156,3 +156,11 @@ export async function userHasPermissionsForZapImage(auth: AuthProps): Promise<bo
 
 	return false;
 }
+
+export async function userHasPermissionsForReactionImage(auth: AuthProps): Promise<boolean> {
+	if (isSelf(auth)) return true;
+
+	if (await isFriend(auth)) return true;
+
+	return false;
+}

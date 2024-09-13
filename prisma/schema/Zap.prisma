@@ -7,7 +7,13 @@ model Zap {
   moment   Moment @relation(fields: [momentId], references: [id])
   momentId String
 
+  repost   Zap?    @relation("Reposts", fields: [repostId], references: [id])
+  repostId String?
+  reposts  Zap[]   @relation("Reposts")
+
   comments  Comment[]
   reactions Reaction[]
   uploaded  Boolean
+
+  @@unique([authorId, repostId])
 }
