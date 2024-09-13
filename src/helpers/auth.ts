@@ -31,3 +31,103 @@ export async function expressAuthentication(request: Request): Promise<RequestWi
 
 	return Promise.resolve({ user });
 }
+
+export async function hasPermissionsForProfilePicture(
+	requestUserId: string,
+	responseUserId: string
+): Promise<boolean> {
+	const isSelf = requestUserId === responseUserId;
+	if (isSelf) return true;
+
+	const hasIncomingFriendRequest = await prisma.friendRequest.findUnique({
+		where: {
+			senderId_receiverId: {
+				senderId: responseUserId,
+				receiverId: requestUserId
+			}
+		}
+	});
+	if (hasIncomingFriendRequest) return true;
+
+	const isFriend = await prisma.user.findFirst({
+		where: {
+			id: responseUserId,
+			OR: [
+				{
+					friendsOf: {
+						some: {
+							senderId: requestUserId
+						}
+					}
+				},
+				{
+					friendsWith: {
+						some: {
+							receiverId: requestUserId
+						}
+					}
+				}
+			]
+		}
+	});
+	if (isFriend) return true;
+
+	const isFriendOfFriend = await prisma.user.findFirst({
+		where: {
+			id: responseUserId,
+			OR: [
+				{
+					friendsOf: {
+						some: {
+							sender: {
+								OR: [
+									{
+										friendsOf: {
+											some: {
+												senderId: requestUserId
+											}
+										}
+									},
+									{
+										friendsWith: {
+											some: {
+												receiverId: requestUserId
+											}
+										}
+									}
+								]
+							}
+						}
+					}
+				},
+				{
+					friendsWith: {
+						some: {
+							receiver: {
+								OR: [
+									{
+										friendsOf: {
+											some: {
+												senderId: requestUserId
+											}
+										}
+									},
+									{
+										friendsWith: {
+											some: {
+												receiverId: requestUserId
+											}
+										}
+									}
+								]
+							}
+						}
+					}
+				}
+			]
+		}
+	});
+	if (isFriendOfFriend) return true;
+
+	return false;
+}

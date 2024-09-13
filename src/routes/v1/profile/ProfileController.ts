@@ -14,7 +14,7 @@ interface ProfileResponseProps {
 	inviteUrl?: string;
 }
 
-interface PictureResponseProps {
+interface SetPictureResponseProps {
 	uploadUrl: string;
 }
 
@@ -36,7 +36,7 @@ export class ProfileController extends Controller {
 	@Put("picture")
 	public async setProfilePicture(
 		@Request() request: RequestWithUser
-	): Promise<PictureResponseProps> {
+	): Promise<SetPictureResponseProps> {
 		return {
 			uploadUrl: await storage.presignedPutObject(
 				Buckets.AVATARS,
@@ -44,6 +44,20 @@ export class ProfileController extends Controller {
 				15 * 60
 			)
 		};
+	}
+
+	@Put("picture/uploaded")
+	public async setProfilePictureUploaded(@Request() request: RequestWithUser): Promise<void> {
+		await prisma.user.update({
+			where: {
+				id: request.user.user.id
+			},
+			data: {
+				profilePictureVersion: {
+					increment: 1
+				}
+			}
+		});
 	}
 
 	@Get()

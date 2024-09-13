@@ -1,4 +1,20 @@
-import { prisma } from "../../../../src/helpers/db";
+import { Buckets } from "../../../enums/Buckets";
+import { hasPermissionsForProfilePicture, RequestWithUser } from "../../../helpers/auth";
+import { prisma } from "../../../helpers/db";
+import { storage } from "../../../helpers/storage";
+import {
+	Controller,
+	Get,
+	Path,
+	Produces,
+	Query,
+	Route,
+	Tags,
+	Request,
+	Security,
+	Res,
+	TsoaResponse
+} from "tsoa";
 
 interface UserGetParams {
 	id: string;
@@ -8,10 +24,10 @@ interface UserGetParams {
 }
 
 // src/users/usersController.ts
-import { Controller, Get, Path, Query, Route, Tags } from "tsoa";
 
 @Tags("Users")
-@Route("users")
+@Route("v1/users")
+@Security("sessionToken")
 export class UsersController extends Controller {
 	@Get("{id}")
 	public async getUserById(@Path() id: string): Promise<UserGetParams> {
@@ -29,6 +45,24 @@ export class UsersController extends Controller {
 			firstName: user.firstName,
 			lastName: user.lastName
 		};
+	}
+
+	@Get("{id}/profile/picture")
+	@Produces("image/*")
+	public async getProfilePicture(
+		@Request() request: RequestWithUser,
+		@Path() id: string,
+		@Res() unauthorized: TsoaResponse<401, { reason: string }>
+	): Promise<Buffer> {
+		const hasPermission = await hasPermissionsForProfilePicture(request.user.user.id, id);
+		if (!hasPermission) return unauthorized(401, { reason: "Unauthorized" });
+
+		this.setStatus(302);
+		this.setHeader(
+			"Location",
+			await storage.presignedGetObject(Buckets.AVATARS, `${id}.jpg`, 15 * 60)
+		);
+		return Buffer.from([]);
 	}
 
 	@Get()

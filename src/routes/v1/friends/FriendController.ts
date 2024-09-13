@@ -18,8 +18,7 @@ import {
 	Post
 } from "tsoa";
 import { UserProps } from "../../../models/UserProps";
-import { storage } from "../../../helpers/storage";
-import { Buckets } from "../../../enums/Buckets";
+import { getProfilePictureUrl } from "../../../helpers/storage";
 
 interface FriendsResponseProps {
 	friends: UserProps[];
@@ -247,11 +246,7 @@ export class FriendController extends Controller {
 						handle: friend.handle,
 						firstName: friend.firstName,
 						lastName: friend.lastName,
-						profilePictureUrl: await storage.presignedGetObject(
-							Buckets.AVATARS,
-							`${friend.id}.jpg`,
-							15 * 60
-						)
+						profilePictureUrl: getProfilePictureUrl(friend.id, friend.profilePictureVersion)
 					};
 				})
 			)
@@ -314,11 +309,7 @@ export class FriendController extends Controller {
 						handle: sender.handle,
 						firstName: sender.firstName,
 						lastName: sender.lastName,
-						profilePictureUrl: await storage.presignedGetObject(
-							Buckets.AVATARS,
-							`${sender.id}.jpg`,
-							15 * 60
-						)
+						profilePictureUrl: getProfilePictureUrl(sender.id, sender.profilePictureVersion)
 					};
 				})
 			),
@@ -329,11 +320,7 @@ export class FriendController extends Controller {
 						handle: receiver.handle,
 						firstName: receiver.firstName,
 						lastName: receiver.lastName,
-						profilePictureUrl: await storage.presignedGetObject(
-							Buckets.AVATARS,
-							`${receiver.id}.jpg`,
-							15 * 60
-						)
+						profilePictureUrl: getProfilePictureUrl(receiver.id, receiver.profilePictureVersion)
 					};
 				})
 			)

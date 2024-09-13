@@ -1,12 +1,16 @@
 import { Controller, Get, Route, Security, Tags, Request } from "tsoa";
 import { prisma } from "../../../helpers/db";
 import { extractTimeFromTypeIdAsNumber } from "../../../helpers/time";
-import { getPresignedReactionUrl, getPresignedZapUrl, storage } from "../../../helpers/storage";
-import { Buckets } from "../../../enums/Buckets";
+import {
+	getPresignedReactionUrl,
+	getPresignedZapUrl,
+	getProfilePictureUrl
+} from "../../../helpers/storage";
 import { ReactionType } from "../../../enums/ReactionType";
 import { ZapImageType } from "../../../enums/ZapImageType";
 import { RequestWithUser } from "../../../helpers/auth";
 import { Prefix } from "../../../enums/Prefix";
+import { lateTime } from "../../../const/lateTime";
 
 interface Author {
 	id: string;
@@ -48,7 +52,7 @@ interface Zap {
 	/**
 	 * @isInt
 	 */
-	late: number;
+	lateBy?: number;
 	comments: Comment[];
 	reactions: Reaction[];
 }
@@ -137,43 +141,47 @@ export class FeedController extends Controller {
 			zaps: (typeof content)[0]["zaps"]
 		) {
 			return await Promise.all(
-				zaps.map(async (zap) => ({
-					id: zap.id,
-					frontCameraUrl: await getPresignedZapUrl({
-						momentId: currentMoment.id,
-						userId: userId,
-						zapId: zap.id,
-						type: ZapImageType.FRONT
-					}),
-					backCameraUrl: await getPresignedZapUrl({
-						momentId: currentMoment.id,
-						userId: userId,
-						zapId: zap.id,
-						type: ZapImageType.BACK
-					}),
-					timestamp: extractTimeFromTypeIdAsNumber(zap.id, Prefix.ZAP),
-					late:
-						currentMoment.timestamp.getTime() - extractTimeFromTypeIdAsNumber(zap.id, Prefix.ZAP),
-					comments: zap.comments.map((comment) => ({
-						id: comment.id,
-						authorId: comment.authorId,
-						content: comment.content,
-						timestamp: extractTimeFromTypeIdAsNumber(comment.id, Prefix.COMMENT)
-					})),
-					reactions: await Promise.all(
-						zap.reactions.map(async (reaction) => ({
-							id: reaction.id,
-							authorId: reaction.authorId,
-							type: ReactionType[reaction.type],
-							imageUrl: await getPresignedReactionUrl({
+				zaps.map(async (zap) => {
+					const lateBy =
+						extractTimeFromTypeIdAsNumber(zap.id, Prefix.ZAP) -
+						(currentMoment.timestamp.getTime() + lateTime);
+					return {
+						id: zap.id,
+						frontCameraUrl: await getPresignedZapUrl({
+							momentId: currentMoment.id,
+							userId: userId,
+							zapId: zap.id,
+							type: ZapImageType.FRONT
+						}),
+						backCameraUrl: await getPresignedZapUrl({
+							momentId: currentMoment.id,
+							userId: userId,
+							zapId: zap.id,
+							type: ZapImageType.BACK
+						}),
+						timestamp: extractTimeFromTypeIdAsNumber(zap.id, Prefix.ZAP),
+						lateBy: lateBy > 0 ? lateBy : undefined,
+						comments: zap.comments.map((comment) => ({
+							id: comment.id,
+							authorId: comment.authorId,
+							content: comment.content,
+							timestamp: extractTimeFromTypeIdAsNumber(comment.id, Prefix.COMMENT)
+						})),
+						reactions: await Promise.all(
+							zap.reactions.map(async (reaction) => ({
+								id: reaction.id,
 								authorId: reaction.authorId,
-								reactionType: ReactionType[reaction.type],
-								reactionImageId: reaction.imageId
-							}),
-							timestamp: extractTimeFromTypeIdAsNumber(reaction.id, Prefix.REACTION)
-						}))
-					)
-				}))
+								type: ReactionType[reaction.type],
+								imageUrl: await getPresignedReactionUrl({
+									authorId: reaction.authorId,
+									reactionType: ReactionType[reaction.type],
+									reactionImageId: reaction.imageId
+								}),
+								timestamp: extractTimeFromTypeIdAsNumber(reaction.id, Prefix.REACTION)
+							}))
+						)
+					};
+				})
 			);
 		}
 
@@ -208,16 +216,13 @@ export class FeedController extends Controller {
 						id: true,
 						handle: true,
 						firstName: true,
-						lastName: true
+						lastName: true,
+						profilePictureVersion: true
 					}
 				})
 			).map(async (author) => ({
 				...author,
-				profilePictureUrl: await storage.presignedGetObject(
-					Buckets.AVATARS,
-					`${author.id}.jpg`,
-					15 * 60
-				)
+				profilePictureUrl: getProfilePictureUrl(author.id, author.profilePictureVersion)
 			}))
 		);
 

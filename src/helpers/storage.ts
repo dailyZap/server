@@ -11,6 +11,9 @@ export const storage = new Client({
 	secretKey: process.env.S3_SECRET_KEY!
 });
 
+const isSSL = process.env.SSL == "true";
+const isDefaultPort = process.env.PORT == "80" || process.env.PORT == "443";
+
 interface ReactionImageProperties {
 	authorId: string;
 	reactionType: ReactionType;
@@ -38,4 +41,8 @@ export async function getPresignedZapUrl(props: ZapImageProperties) {
 
 export function getZapUrl(props: ZapImageProperties) {
 	return `${props.momentId}/${props.userId}/${props.zapId}-${props.type}.jpg`;
+}
+
+export function getProfilePictureUrl(userId: string, version: number) {
+	return `${isSSL ? "https" : "http"}://${process.env.HOST}${isDefaultPort ? "" : ":" + process.env.PORT}/v1/users/${userId}/profile/picture?v=${version}`;
 }
