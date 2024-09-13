@@ -14,7 +14,8 @@ import {
 	Get,
 	Delete,
 	Res,
-	TsoaResponse
+	TsoaResponse,
+	Post
 } from "tsoa";
 import { UserProps } from "../../../models/UserProps";
 import { storage } from "../../../helpers/storage";
@@ -143,7 +144,7 @@ export class FriendController extends Controller {
 		});
 	}
 
-	@Put("accept/{senderId}")
+	@Post("accept/{senderId}")
 	public async acceptFriendship(
 		@Request() request: RequestWithUser,
 		@Path() senderId: string
@@ -179,7 +180,7 @@ export class FriendController extends Controller {
 		});
 	}
 
-	@Put("reject/{senderId}")
+	@Post("reject/{senderId}")
 	public async rejectFriendship(
 		@Request() request: RequestWithUser,
 		@Path() senderId: string
