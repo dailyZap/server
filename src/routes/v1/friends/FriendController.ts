@@ -151,7 +151,7 @@ export class FriendController extends Controller {
 		const friendRequest = await prisma.friendRequest.findUniqueOrThrow({
 			where: {
 				senderId_receiverId: {
-					senderId: senderId,
+					senderId,
 					receiverId: request.user.user.id
 				}
 			}
@@ -164,7 +164,7 @@ export class FriendController extends Controller {
 		await prisma.friendRequest.delete({
 			where: {
 				senderId_receiverId: {
-					senderId: senderId,
+					senderId,
 					receiverId: request.user.user.id
 				}
 			}
@@ -187,7 +187,7 @@ export class FriendController extends Controller {
 		const friendRequest = await prisma.friendRequest.findUniqueOrThrow({
 			where: {
 				senderId_receiverId: {
-					senderId: senderId,
+					senderId,
 					receiverId: request.user.user.id
 				}
 			}
@@ -200,7 +200,7 @@ export class FriendController extends Controller {
 		await prisma.friendRequest.delete({
 			where: {
 				senderId_receiverId: {
-					senderId: senderId,
+					senderId,
 					receiverId: request.user.user.id
 				}
 			}

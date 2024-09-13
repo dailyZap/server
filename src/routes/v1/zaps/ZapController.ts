@@ -95,14 +95,14 @@ export class ZapController extends Controller {
 		};
 	}
 
-	@Put("{zapId}/uploaded")
+	@Put("{id}/uploaded")
 	public async setZapUploaded(
 		@Request() request: RequestWithUser,
-		@Path() zapId: string
+		@Path() id: string
 	): Promise<void> {
 		const zap = await prisma.zap.findFirstOrThrow({
 			where: {
-				id: zapId
+				id
 			}
 		});
 
@@ -113,7 +113,7 @@ export class ZapController extends Controller {
 
 		await prisma.zap.update({
 			where: {
-				id: zapId
+				id
 			},
 			data: {
 				uploaded: true
