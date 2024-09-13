@@ -6,7 +6,7 @@ export const prisma = new PrismaClient({
 			code: true
 		},
 		user: {
-			twoFaCode: true,
+			otp: true,
 			sessionToken: true
 		}
 	}

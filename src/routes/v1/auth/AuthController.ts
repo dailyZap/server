@@ -25,9 +25,9 @@ interface UserCreationParams {
 	lastName: string;
 }
 
-interface UserTwoFaParams {
+interface UserOTPParams {
 	loginToken: string;
-	twoFaCode: string;
+	otp: string;
 	deviceToken: string;
 }
 
@@ -45,7 +45,7 @@ interface LoginReturnParams {
 	loginToken: string;
 }
 
-interface TwoFaReturnParams {
+interface OTPReturnParams {
 	sessionToken: string;
 }
 
@@ -77,7 +77,7 @@ export class AuthController extends Controller {
 	): Promise<RegisterReturnParams> {
 		// TODO: Validate E-Mail
 
-		const twoFaCode = randomInt(100000, 999999).toString();
+		const otp = randomInt(100000, 999999).toString();
 		const loginToken = typeid().toString();
 
 		await prisma.user
@@ -88,7 +88,7 @@ export class AuthController extends Controller {
 					email: userParams.email,
 					firstName: userParams.firstName,
 					lastName: userParams.lastName,
-					twoFaCode,
+					otp,
 					loginToken
 				}
 			})
@@ -103,8 +103,8 @@ export class AuthController extends Controller {
 			.sendMail({
 				from: process.env.MAIL_FROM,
 				to: userParams.email,
-				subject: "2FA Code",
-				text: `Your 2FA Code is: ${twoFaCode}`
+				subject: "One-Time Password",
+				text: `Your One-Time Password is: ${otp}`
 			})
 			.catch(async (error) => {
 				await prisma.user.delete({
@@ -142,7 +142,7 @@ export class AuthController extends Controller {
 
 		if (!user) return invalidUser(404, { reason: "User not found" });
 
-		const twoFaCode = randomInt(100000, 999999).toString();
+		const otp = randomInt(100000, 999999).toString();
 		const loginToken = typeid().toString();
 
 		await prisma.user.update({
@@ -151,7 +151,7 @@ export class AuthController extends Controller {
 			},
 			data: {
 				loginToken,
-				twoFaCode
+				otp
 			}
 		});
 
@@ -159,8 +159,8 @@ export class AuthController extends Controller {
 			.sendMail({
 				from: process.env.MAIL_FROM,
 				to: user.email,
-				subject: "2FA Code",
-				text: `Your 2FA Code is: ${twoFaCode}`
+				subject: "One-Time Password",
+				text: `Your One-Time Password is: ${otp}`
 			})
 			.catch(async (error) => {
 				return failedMailDelivery(500, {
@@ -172,18 +172,18 @@ export class AuthController extends Controller {
 		return { loginToken };
 	}
 
-	@Post("twoFa")
-	public async twoFa(
-		@Body() userParams: UserTwoFaParams,
+	@Post("otp")
+	public async otp(
+		@Body() userParams: UserOTPParams,
 		@Res() unauthorized: TsoaResponse<401, { reason: string }>,
 		@Res() forbidden: TsoaResponse<403, { reason: string }>
-	): Promise<TwoFaReturnParams> {
+	): Promise<OTPReturnParams> {
 		const user = await prisma.user.findFirst({
 			where: {
 				loginToken: userParams.loginToken
 			},
 			omit: {
-				twoFaCode: false
+				otp: false
 			}
 		});
 
@@ -196,8 +196,7 @@ export class AuthController extends Controller {
 		if (now.getTime() - loginTokenCreationDate.getTime() > 15 * 60 * 1000)
 			return forbidden(403, { reason: "Login Token Expired" });
 
-		if (user.twoFaCode !== userParams.twoFaCode)
-			return forbidden(403, { reason: "Invalid 2FA Code" });
+		if (user.otp !== userParams.otp) return forbidden(403, { reason: "Invalid otp" });
 
 		const oldLoginFromSameDevice = await prisma.user.findUnique({
 			where: {
@@ -214,7 +213,7 @@ export class AuthController extends Controller {
 					deviceToken: null,
 					sessionToken: null,
 					loginToken: null,
-					twoFaCode: null
+					otp: null
 				}
 			});
 		}
@@ -228,7 +227,7 @@ export class AuthController extends Controller {
 				sessionToken,
 				deviceToken: userParams.deviceToken,
 				loginToken: null,
-				twoFaCode: null
+				otp: null
 			}
 		});
 

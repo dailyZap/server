@@ -15,7 +15,7 @@ model User {
   outgoingFriendRequests  FriendRequest[] @relation("outgoingFriendRequests")
   incommingFriendRequests FriendRequest[] @relation("incommingFriendRequests")
   profilePictureVersion   Int             @default(0)
-  twoFaCode               String?
+  otp                     String?
   deviceToken             String?         @unique
   loginToken              String?         @unique
   sessionToken            String?         @unique
