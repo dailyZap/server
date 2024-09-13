@@ -143,7 +143,7 @@ export class FriendController extends Controller {
 		});
 	}
 
-	@Post("accept/{senderId}")
+	@Post("requests/{senderId}/accept")
 	public async acceptFriendship(
 		@Request() request: RequestWithUser,
 		@Path() senderId: string
@@ -179,7 +179,7 @@ export class FriendController extends Controller {
 		});
 	}
 
-	@Post("reject/{senderId}")
+	@Post("requests/{senderId}/reject")
 	public async rejectFriendship(
 		@Request() request: RequestWithUser,
 		@Path() senderId: string

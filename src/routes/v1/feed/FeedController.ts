@@ -7,14 +7,7 @@ import { ZapImageType } from "../../../enums/ZapImageType";
 import { RequestWithUser } from "../../../helpers/auth";
 import { Prefix } from "../../../enums/Prefix";
 import { lateTime } from "../../../const/lateTime";
-
-interface Author {
-	id: string;
-	handle: string;
-	firstName: string;
-	lastName: string;
-	profilePictureUrl: string;
-}
+import { UserProps } from "../../../models/UserProps";
 
 interface Comment {
 	id: string;
@@ -62,7 +55,7 @@ interface FeedResponseProps {
 	myZaps: Zap[];
 	friend: {
 		content: Content[];
-		users: Author[];
+		users: UserProps[];
 	};
 }
 
