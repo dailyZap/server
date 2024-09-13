@@ -6,6 +6,7 @@ import { Buckets } from "../../../enums/Buckets";
 import { ReactionType } from "../../../enums/ReactionType";
 import { ZapImageType } from "../../../enums/ZapImageType";
 import { RequestWithUser } from "../../../helpers/auth";
+import { Prefix } from "../../../enums/Prefix";
 
 interface Author {
 	id: string;
@@ -29,7 +30,7 @@ interface Reaction {
 	id: string;
 	authorId: string;
 	type: ReactionType;
-	imageUrl?: string;
+	imageUrl: string;
 	/**
 	 * @isInt
 	 */
@@ -58,8 +59,11 @@ interface Content {
 }
 
 interface FeedResponseProps {
-	content: Content[];
-	authors: Author[];
+	myZaps: Zap[];
+	friend: {
+		content: Content[];
+		users: Author[];
+	};
 }
 
 @Tags("Feed")
@@ -111,15 +115,72 @@ export class FeedController extends Controller {
 				id: true,
 				zaps: {
 					where: {
-						momentId: currentMoment.id
+						momentId: currentMoment.id,
+						uploaded: true
 					},
 					include: {
 						comments: true,
-						reactions: true
+						reactions: {
+							where: {
+								image: {
+									uploaded: true
+								}
+							}
+						}
 					}
 				}
 			}
 		});
+
+		async function returnZapsWithReactionsAndComments(
+			userId: string,
+			zaps: (typeof content)[0]["zaps"]
+		) {
+			return await Promise.all(
+				zaps.map(async (zap) => ({
+					id: zap.id,
+					frontCameraUrl: await getPresignedZapUrl({
+						momentId: currentMoment.id,
+						userId: userId,
+						zapId: zap.id,
+						type: ZapImageType.FRONT
+					}),
+					backCameraUrl: await getPresignedZapUrl({
+						momentId: currentMoment.id,
+						userId: userId,
+						zapId: zap.id,
+						type: ZapImageType.BACK
+					}),
+					timestamp: extractTimeFromTypeIdAsNumber(zap.id, Prefix.ZAP),
+					late:
+						currentMoment.timestamp.getTime() - extractTimeFromTypeIdAsNumber(zap.id, Prefix.ZAP),
+					comments: zap.comments.map((comment) => ({
+						id: comment.id,
+						authorId: comment.authorId,
+						content: comment.content,
+						timestamp: extractTimeFromTypeIdAsNumber(comment.id, Prefix.COMMENT)
+					})),
+					reactions: await Promise.all(
+						zap.reactions.map(async (reaction) => ({
+							id: reaction.id,
+							authorId: reaction.authorId,
+							type: ReactionType[reaction.type],
+							imageUrl: await getPresignedReactionUrl({
+								authorId: reaction.authorId,
+								reactionType: ReactionType[reaction.type],
+								reactionImageId: reaction.imageId
+							}),
+							timestamp: extractTimeFromTypeIdAsNumber(reaction.id, Prefix.REACTION)
+						}))
+					)
+				}))
+			);
+		}
+
+		const myContentIndex = content.findIndex((user) => user.id === request.user.user.id);
+
+		const myZaps = myContentIndex == -1 ? [] : content[myContentIndex].zaps;
+		content.splice(myContentIndex, 1);
 
 		const authorIds = new Set<string>();
 
@@ -160,52 +221,19 @@ export class FeedController extends Controller {
 			}))
 		);
 
-		return {
-			content: await Promise.all(
-				content.map(async (user) => ({
-					userId: user.id,
-					zaps: await Promise.all(
-						user.zaps.map(async (zap) => ({
-							id: zap.id,
-							frontCameraUrl: await getPresignedZapUrl({
-								momentId: currentMoment.id,
-								userId: user.id,
-								zapId: zap.id,
-								type: ZapImageType.FRONT
-							}),
-							backCameraUrl: await getPresignedZapUrl({
-								momentId: currentMoment.id,
-								userId: user.id,
-								zapId: zap.id,
-								type: ZapImageType.BACK
-							}),
-							timestamp: extractTimeFromTypeIdAsNumber(zap.id),
-							late: currentMoment.timestamp.getTime() - extractTimeFromTypeIdAsNumber(zap.id),
-							comments: zap.comments.map((comment) => ({
-								id: comment.id,
-								authorId: comment.authorId,
-								content: comment.content,
-								timestamp: extractTimeFromTypeIdAsNumber(comment.id)
-							})),
-							reactions: await Promise.all(
-								zap.reactions.map(async (reaction) => ({
-									id: reaction.id,
-									authorId: reaction.authorId,
-									type: ReactionType[reaction.type],
-									imageUrl: await getPresignedReactionUrl({
-										momentId: currentMoment.id,
-										zapId: zap.id,
-										authorId: reaction.authorId,
-										reactionType: ReactionType[reaction.type]
-									}),
-									timestamp: extractTimeFromTypeIdAsNumber(reaction.id)
-								}))
-							)
-						}))
-					)
-				}))
-			),
-			authors
+		const response = {
+			myZaps: await returnZapsWithReactionsAndComments(request.user.user.id, myZaps),
+			friend: {
+				content: await Promise.all(
+					content.map(async (user) => ({
+						userId: user.id,
+						zaps: await returnZapsWithReactionsAndComments(user.id, user.zaps)
+					}))
+				),
+				users: authors
+			}
 		};
+
+		return response;
 	}
 }

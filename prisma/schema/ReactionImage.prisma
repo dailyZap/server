@@ -1,0 +1,5 @@
+model ReactionImage {
+  id        String     @id
+  reactions Reaction[]
+  uploaded  Boolean
+}

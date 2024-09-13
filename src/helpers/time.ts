@@ -17,11 +17,11 @@ export function extractTimestampFromUUIDv7(uuid: string): Date {
 	return date;
 }
 
-export function extractTimeFromTypeIdAsDate(typeId: string, prefix?: string): Date {
-	const uuid = toUUID(fromString(typeId, prefix));
+export function extractTimeFromTypeIdAsDate(typeId: string, prefix: string | null): Date {
+	const uuid = toUUID(fromString(typeId, prefix != null ? prefix : undefined));
 	return extractTimestampFromUUIDv7(uuid);
 }
 
-export function extractTimeFromTypeIdAsNumber(typeId: string, prefix?: string): number {
+export function extractTimeFromTypeIdAsNumber(typeId: string, prefix: string | null): number {
 	return extractTimeFromTypeIdAsDate(typeId, prefix).getTime();
 }

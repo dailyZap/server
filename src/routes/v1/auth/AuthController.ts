@@ -199,6 +199,26 @@ export class AuthController extends Controller {
 		if (user.twoFaCode !== userParams.twoFaCode)
 			return forbidden(403, { reason: "Invalid 2FA Code" });
 
+		const oldLoginFromSameDevice = await prisma.user.findUnique({
+			where: {
+				deviceToken: userParams.deviceToken
+			}
+		});
+
+		if (oldLoginFromSameDevice) {
+			await prisma.user.update({
+				where: {
+					id: oldLoginFromSameDevice.id
+				},
+				data: {
+					deviceToken: null,
+					sessionToken: null,
+					loginToken: null,
+					twoFaCode: null
+				}
+			});
+		}
+
 		const sessionToken = randomBytes(16).toString("base64");
 		await prisma.user.update({
 			where: {

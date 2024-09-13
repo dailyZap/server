@@ -12,10 +12,9 @@ export const storage = new Client({
 });
 
 interface ReactionImageProperties {
-	momentId: string;
-	zapId: string;
 	authorId: string;
 	reactionType: ReactionType;
+	reactionImageId: string;
 }
 
 interface ZapImageProperties {
@@ -26,16 +25,17 @@ interface ZapImageProperties {
 }
 
 export async function getPresignedReactionUrl(props: ReactionImageProperties) {
-	let path = `${props.authorId}/${props.reactionType}.jpg`;
+	return await storage.presignedGetObject(Buckets.REACTIONS, getReactionUrl(props), 15 * 60);
+}
 
-	if (props.reactionType == ReactionType.HIGH_VOLTAGE) {
-		path = `${props.momentId}/${props.zapId}/${props.authorId}.jpg`;
-	}
-	return await storage.presignedGetObject(Buckets.REACTIONS, path, 15 * 60);
+export function getReactionUrl(props: ReactionImageProperties) {
+	return `${props.authorId}/${props.reactionType}/${props.reactionImageId}.jpg`;
 }
 
 export async function getPresignedZapUrl(props: ZapImageProperties) {
-	const path = `${props.momentId}/${props.userId}/${props.zapId}-${props.type}.jpg`;
+	return await storage.presignedGetObject(Buckets.ZAPS, getZapUrl(props), 15 * 60);
+}
 
-	return await storage.presignedGetObject(Buckets.REACTIONS, path, 15 * 60);
+export function getZapUrl(props: ZapImageProperties) {
+	return `${props.momentId}/${props.userId}/${props.zapId}-${props.type}.jpg`;
 }
