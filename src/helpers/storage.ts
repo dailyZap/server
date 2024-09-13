@@ -36,13 +36,17 @@ export function getReactionUrl(props: ReactionImageProperties) {
 }
 
 export async function getPresignedZapUrl(props: ZapImageProperties) {
-	return await storage.presignedGetObject(Buckets.ZAPS, getZapUrl(props), 15 * 60);
+	return await storage.presignedGetObject(Buckets.ZAPS, getZapPath(props), 15 * 60);
 }
 
-export function getZapUrl(props: ZapImageProperties) {
+export function getZapPath(props: ZapImageProperties) {
 	return `${props.momentId}/${props.userId}/${props.zapId}-${props.type}.jpg`;
 }
 
 export function getProfilePictureUrl(userId: string, version: number) {
 	return `${isSSL ? "https" : "http"}://${process.env.HOST}${isDefaultPort ? "" : ":" + process.env.PORT}/v1/users/${userId}/profile/picture?v=${version}`;
+}
+
+export function getZapUrl(zapId: string, type: ZapImageType) {
+	return `${isSSL ? "https" : "http"}://${process.env.HOST}${isDefaultPort ? "" : ":" + process.env.PORT}/v1/zaps/${zapId}/picture/${type}`;
 }

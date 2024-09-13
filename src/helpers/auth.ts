@@ -32,49 +32,56 @@ export async function expressAuthentication(request: Request): Promise<RequestWi
 	return Promise.resolve({ user });
 }
 
-export async function hasPermissionsForProfilePicture(
-	requestUserId: string,
-	responseUserId: string
-): Promise<boolean> {
-	const isSelf = requestUserId === responseUserId;
-	if (isSelf) return true;
+export interface AuthProps {
+	requestUserId: string;
+	assetOwnerId: string;
+}
 
+export const isSelf = (auth: AuthProps): boolean => {
+	return auth.requestUserId === auth.assetOwnerId;
+};
+
+export const hasIncomingFriendRequest = async (auth: AuthProps): Promise<boolean> => {
 	const hasIncomingFriendRequest = await prisma.friendRequest.findUnique({
 		where: {
 			senderId_receiverId: {
-				senderId: responseUserId,
-				receiverId: requestUserId
+				senderId: auth.assetOwnerId,
+				receiverId: auth.requestUserId
 			}
 		}
 	});
-	if (hasIncomingFriendRequest) return true;
+	return Boolean(hasIncomingFriendRequest);
+};
 
+export const isFriend = async (auth: AuthProps): Promise<boolean> => {
 	const isFriend = await prisma.user.findFirst({
 		where: {
-			id: responseUserId,
+			id: auth.assetOwnerId,
 			OR: [
 				{
 					friendsOf: {
 						some: {
-							senderId: requestUserId
+							senderId: auth.requestUserId
 						}
 					}
 				},
 				{
 					friendsWith: {
 						some: {
-							receiverId: requestUserId
+							receiverId: auth.requestUserId
 						}
 					}
 				}
 			]
 		}
 	});
-	if (isFriend) return true;
+	return Boolean(isFriend);
+};
 
+export const isFriendOfFriend = async (auth: AuthProps): Promise<boolean> => {
 	const isFriendOfFriend = await prisma.user.findFirst({
 		where: {
-			id: responseUserId,
+			id: auth.assetOwnerId,
 			OR: [
 				{
 					friendsOf: {
@@ -84,14 +91,14 @@ export async function hasPermissionsForProfilePicture(
 									{
 										friendsOf: {
 											some: {
-												senderId: requestUserId
+												senderId: auth.requestUserId
 											}
 										}
 									},
 									{
 										friendsWith: {
 											some: {
-												receiverId: requestUserId
+												receiverId: auth.requestUserId
 											}
 										}
 									}
@@ -108,14 +115,14 @@ export async function hasPermissionsForProfilePicture(
 									{
 										friendsOf: {
 											some: {
-												senderId: requestUserId
+												senderId: auth.requestUserId
 											}
 										}
 									},
 									{
 										friendsWith: {
 											some: {
-												receiverId: requestUserId
+												receiverId: auth.requestUserId
 											}
 										}
 									}
@@ -127,7 +134,25 @@ export async function hasPermissionsForProfilePicture(
 			]
 		}
 	});
-	if (isFriendOfFriend) return true;
+	return Boolean(isFriendOfFriend);
+};
+
+export async function userHasPermissionsForProfilePicture(auth: AuthProps): Promise<boolean> {
+	if (isSelf(auth)) return true;
+
+	if (await hasIncomingFriendRequest(auth)) return true;
+
+	if (await isFriend(auth)) return true;
+
+	if (await isFriendOfFriend(auth)) return true;
+
+	return false;
+}
+
+export async function userHasPermissionsForZapImage(auth: AuthProps): Promise<boolean> {
+	if (isSelf(auth)) return true;
+
+	if (await isFriend(auth)) return true;
 
 	return false;
 }

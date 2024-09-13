@@ -1,11 +1,7 @@
 import { Controller, Get, Route, Security, Tags, Request } from "tsoa";
 import { prisma } from "../../../helpers/db";
 import { extractTimeFromTypeIdAsNumber } from "../../../helpers/time";
-import {
-	getPresignedReactionUrl,
-	getPresignedZapUrl,
-	getProfilePictureUrl
-} from "../../../helpers/storage";
+import { getPresignedReactionUrl, getProfilePictureUrl, getZapUrl } from "../../../helpers/storage";
 import { ReactionType } from "../../../enums/ReactionType";
 import { ZapImageType } from "../../../enums/ZapImageType";
 import { RequestWithUser } from "../../../helpers/auth";
@@ -136,10 +132,7 @@ export class FeedController extends Controller {
 			}
 		});
 
-		async function returnZapsWithReactionsAndComments(
-			userId: string,
-			zaps: (typeof content)[0]["zaps"]
-		) {
+		async function returnZapsWithReactionsAndComments(zaps: (typeof content)[0]["zaps"]) {
 			return await Promise.all(
 				zaps.map(async (zap) => {
 					const lateBy =
@@ -147,18 +140,8 @@ export class FeedController extends Controller {
 						(currentMoment.timestamp.getTime() + lateTime);
 					return {
 						id: zap.id,
-						frontCameraUrl: await getPresignedZapUrl({
-							momentId: currentMoment.id,
-							userId: userId,
-							zapId: zap.id,
-							type: ZapImageType.FRONT
-						}),
-						backCameraUrl: await getPresignedZapUrl({
-							momentId: currentMoment.id,
-							userId: userId,
-							zapId: zap.id,
-							type: ZapImageType.BACK
-						}),
+						frontCameraUrl: getZapUrl(zap.id, ZapImageType.FRONT),
+						backCameraUrl: getZapUrl(zap.id, ZapImageType.BACK),
 						timestamp: extractTimeFromTypeIdAsNumber(zap.id, Prefix.ZAP),
 						lateBy: lateBy > 0 ? lateBy : undefined,
 						comments: zap.comments.map((comment) => ({
@@ -227,12 +210,12 @@ export class FeedController extends Controller {
 		);
 
 		const response = {
-			myZaps: await returnZapsWithReactionsAndComments(request.user.user.id, myZaps),
+			myZaps: await returnZapsWithReactionsAndComments(myZaps),
 			friend: {
 				content: await Promise.all(
 					content.map(async (user) => ({
 						userId: user.id,
-						zaps: await returnZapsWithReactionsAndComments(user.id, user.zaps)
+						zaps: await returnZapsWithReactionsAndComments(user.zaps)
 					}))
 				),
 				users: authors

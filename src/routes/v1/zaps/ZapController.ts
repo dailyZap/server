@@ -1,10 +1,23 @@
-import { getZapUrl, storage } from "../../../helpers/storage";
-import { RequestWithUser } from "../../../helpers/auth";
+import { getPresignedZapUrl, getZapPath, storage } from "../../../helpers/storage";
+import { userHasPermissionsForZapImage, RequestWithUser } from "../../../helpers/auth";
 import { Buckets } from "../../../enums/Buckets";
 import { prisma } from "../../../helpers/db";
 import { Prefix } from "../../../enums/Prefix";
 import { ZapImageType } from "../../../enums/ZapImageType";
-import { Controller, Put, Route, Request, Security, Body, Tags, Path } from "tsoa";
+import {
+	Controller,
+	Put,
+	Route,
+	Request,
+	Security,
+	Body,
+	Tags,
+	Path,
+	Get,
+	Produces,
+	Res,
+	TsoaResponse
+} from "tsoa";
 import { v7 } from "uuid";
 import { fromUUID } from "typeid-js";
 
@@ -61,7 +74,7 @@ export class ZapController extends Controller {
 			zapId,
 			uploadFrontUrl: await storage.presignedPutObject(
 				Buckets.ZAPS,
-				getZapUrl({
+				getZapPath({
 					momentId: currentMoment.id,
 					userId: request.user.user.id,
 					zapId,
@@ -71,7 +84,7 @@ export class ZapController extends Controller {
 			),
 			uploadBackUrl: await storage.presignedPutObject(
 				Buckets.ZAPS,
-				getZapUrl({
+				getZapPath({
 					momentId: currentMoment.id,
 					userId: request.user.user.id,
 					zapId,
@@ -106,5 +119,55 @@ export class ZapController extends Controller {
 				uploaded: true
 			}
 		});
+	}
+
+	@Get("{id}/picture/{side}")
+	@Produces("image/*")
+	public async getProfilePicture(
+		@Request() request: RequestWithUser,
+		@Path() id: string,
+		@Path() side: ZapImageType,
+		@Res() unauthorized: TsoaResponse<401, { reason: string }>,
+		@Res() forbidden: TsoaResponse<403, { reason: string }>
+	): Promise<Buffer> {
+		const zap = await prisma.zap.findUniqueOrThrow({
+			where: {
+				id
+			}
+		});
+
+		const userHasPermission = await userHasPermissionsForZapImage({
+			requestUserId: request.user.user.id,
+			assetOwnerId: zap.authorId
+		});
+
+		if (!userHasPermission) return unauthorized(401, { reason: "Unauthorized" });
+
+		const currentMoment = await prisma.moment.findFirstOrThrow({
+			where: {
+				timestamp: {
+					lt: new Date()
+				}
+			},
+			orderBy: {
+				timestamp: "desc"
+			}
+		});
+
+		if (zap.momentId !== currentMoment.id) {
+			return forbidden(403, { reason: "The Day the Zap was taken on is already over" });
+		}
+
+		this.setStatus(302);
+		this.setHeader(
+			"Location",
+			await getPresignedZapUrl({
+				momentId: zap.momentId,
+				userId: zap.authorId,
+				zapId: zap.id,
+				type: side
+			})
+		);
+		return Buffer.from([]);
 	}
 }

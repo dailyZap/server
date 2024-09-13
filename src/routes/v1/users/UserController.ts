@@ -1,5 +1,5 @@
 import { Buckets } from "../../../enums/Buckets";
-import { hasPermissionsForProfilePicture, RequestWithUser } from "../../../helpers/auth";
+import { userHasPermissionsForProfilePicture, RequestWithUser } from "../../../helpers/auth";
 import { prisma } from "../../../helpers/db";
 import { storage } from "../../../helpers/storage";
 import {
@@ -54,7 +54,10 @@ export class UsersController extends Controller {
 		@Path() id: string,
 		@Res() unauthorized: TsoaResponse<401, { reason: string }>
 	): Promise<Buffer> {
-		const hasPermission = await hasPermissionsForProfilePicture(request.user.user.id, id);
+		const hasPermission = await userHasPermissionsForProfilePicture({
+			requestUserId: request.user.user.id,
+			assetOwnerId: id
+		});
 		if (!hasPermission) return unauthorized(401, { reason: "Unauthorized" });
 
 		this.setStatus(302);
