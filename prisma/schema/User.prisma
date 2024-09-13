@@ -1,19 +1,21 @@
 model User {
-  id            String         @id
-  updatedAt     DateTime       @updatedAt
-  handle        String         @unique
-  email         String         @unique
-  firstName     String
-  lastName      String
-  invite        Invite?
-  notifications Notification[]
-  zaps          Zap[]
-  comments      Comment[]
-  reactions     Reaction[]
-  friendsA      User[]         @relation("Friendship")
-  friendsB      User[]         @relation("Friendship")
-  twoFaCode     String?
-  deviceToken   String?        @unique
-  loginToken    String?        @unique
-  sessionToken  String?        @unique
+  id                      String          @id
+  updatedAt               DateTime        @updatedAt
+  handle                  String          @unique
+  email                   String          @unique
+  firstName               String
+  lastName                String
+  invite                  Invite?
+  notifications           Notification[]
+  zaps                    Zap[]
+  comments                Comment[]
+  reactions               Reaction[]
+  friendsWith             Friendship[]    @relation("friendsWith")
+  friendsOf               Friendship[]    @relation("friendsOf")
+  outgoingFriendRequests  FriendRequest[] @relation("outgoingFriendRequests")
+  incommingFriendRequests FriendRequest[] @relation("incommingFriendRequests")
+  twoFaCode               String?
+  deviceToken             String?         @unique
+  loginToken              String?         @unique
+  sessionToken            String?         @unique
 }

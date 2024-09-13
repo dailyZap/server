@@ -5,5 +5,7 @@ export enum Prefix {
 	MOMENT = "moment",
 	ZAP = "zap",
 	COMMENT = "comment",
-	REACTION = "reaction"
+	REACTION = "reaction",
+	FRIEND_REQUEST = "friend_request",
+	FRIENDSHIP = "friendship"
 }

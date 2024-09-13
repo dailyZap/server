@@ -1,0 +1,9 @@
+model FriendRequest {
+  id         String @id
+  sender     User   @relation("outgoingFriendRequests", fields: [senderId], references: [id])
+  senderId   String
+  receiver   User   @relation("incommingFriendRequests", fields: [receiverId], references: [id])
+  receiverId String
+
+  @@unique([senderId, receiverId])
+}

@@ -93,16 +93,16 @@ export class FeedController extends Controller {
 				},
 				OR: [
 					{
-						friendsA: {
+						friendsWith: {
 							some: {
-								id: request.user.user.id
+								receiverId: request.user.user.id
 							}
 						}
 					},
 					{
-						friendsB: {
+						friendsOf: {
 							some: {
-								id: request.user.user.id
+								senderId: request.user.user.id
 							}
 						}
 					},

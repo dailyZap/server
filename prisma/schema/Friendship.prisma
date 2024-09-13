@@ -1,0 +1,9 @@
+model Friendship {
+  id         String @id
+  sender     User   @relation("friendsWith", fields: [senderId], references: [id])
+  senderId   String
+  receiver   User   @relation("friendsOf", fields: [receiverId], references: [id])
+  receiverId String
+
+  @@unique([senderId, receiverId])
+}
