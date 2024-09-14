@@ -32,16 +32,20 @@ export async function expressAuthentication(request: Request): Promise<RequestWi
 	return Promise.resolve({ user });
 }
 
-export interface AuthProps {
+export interface AccessRequest {
 	requestUserId: string;
+	assetId: string;
+}
+
+export interface AccessRequestWithOwner extends AccessRequest {
 	assetOwnerId: string;
 }
 
-export const isSelf = (auth: AuthProps): boolean => {
+export const isSelf = (auth: AccessRequestWithOwner): boolean => {
 	return auth.requestUserId === auth.assetOwnerId;
 };
 
-export const hasIncomingFriendRequest = async (auth: AuthProps): Promise<boolean> => {
+export const hasIncomingFriendRequest = async (auth: AccessRequestWithOwner): Promise<boolean> => {
 	const hasIncomingFriendRequest = await prisma.friendRequest.findUnique({
 		where: {
 			senderId_receiverId: {
@@ -53,7 +57,7 @@ export const hasIncomingFriendRequest = async (auth: AuthProps): Promise<boolean
 	return Boolean(hasIncomingFriendRequest);
 };
 
-export const isFriend = async (auth: AuthProps): Promise<boolean> => {
+export const isFriend = async (auth: AccessRequestWithOwner): Promise<boolean> => {
 	const isFriend = await prisma.user.findFirst({
 		where: {
 			id: auth.assetOwnerId,
@@ -78,7 +82,7 @@ export const isFriend = async (auth: AuthProps): Promise<boolean> => {
 	return Boolean(isFriend);
 };
 
-export const isFriendOfFriend = async (auth: AuthProps): Promise<boolean> => {
+export const isFriendOfFriend = async (auth: AccessRequestWithOwner): Promise<boolean> => {
 	const isFriendOfFriend = await prisma.user.findFirst({
 		where: {
 			id: auth.assetOwnerId,
@@ -137,30 +141,68 @@ export const isFriendOfFriend = async (auth: AuthProps): Promise<boolean> => {
 	return Boolean(isFriendOfFriend);
 };
 
-export async function userHasPermissionsForProfilePicture(auth: AuthProps): Promise<boolean> {
-	if (isSelf(auth)) return true;
+export async function userHasPermissionsForProfilePicture(
+	request: AccessRequest
+): Promise<boolean> {
+	const requestWOwner = {
+		requestUserId: request.requestUserId,
+		assetId: request.assetId,
+		assetOwnerId: request.assetId
+	};
 
-	if (await hasIncomingFriendRequest(auth)) return true;
+	if (isSelf(requestWOwner)) return true;
 
-	if (await isFriend(auth)) return true;
+	if (await hasIncomingFriendRequest(requestWOwner)) return true;
 
-	if (await isFriendOfFriend(auth)) return true;
+	if (await isFriend(requestWOwner)) return true;
+
+	if (await isFriendOfFriend(requestWOwner)) return true;
 
 	return false;
 }
 
-export async function userHasPermissionsForZapImage(auth: AuthProps): Promise<boolean> {
-	if (isSelf(auth)) return true;
+export async function userHasPermissionsForZapImage(request: AccessRequest): Promise<boolean> {
+	const asset = await prisma.zap.findUniqueOrThrow({
+		where: {
+			id: request.assetId
+		}
+	});
 
-	if (await isFriend(auth)) return true;
+	const requestWOwner = {
+		requestUserId: request.requestUserId,
+		assetId: request.assetId,
+		assetOwnerId: asset.authorId
+	};
+
+	if (isSelf(requestWOwner)) return true;
+
+	if (await isFriend(requestWOwner)) return true;
 
 	return false;
 }
 
-export async function userHasPermissionsForReactionImage(auth: AuthProps): Promise<boolean> {
-	if (isSelf(auth)) return true;
+export async function userHasPermissionsForReactionImage(request: AccessRequest): Promise<boolean> {
+	const asset = await prisma.reaction.findUniqueOrThrow({
+		where: {
+			id: request.assetId
+		}
+	});
 
-	if (await isFriend(auth)) return true;
+	const requestWOwner = {
+		requestUserId: request.requestUserId,
+		assetId: request.assetId,
+		assetOwnerId: asset.authorId
+	};
+
+	if (isSelf(requestWOwner)) return true;
+
+	if (
+		await userHasPermissionsForZapImage({
+			requestUserId: request.requestUserId,
+			assetId: asset.zapId
+		})
+	)
+		return true;
 
 	return false;
 }

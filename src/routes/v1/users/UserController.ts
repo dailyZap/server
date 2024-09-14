@@ -56,7 +56,7 @@ export class UsersController extends Controller {
 	): Promise<Buffer> {
 		const hasPermission = await userHasPermissionsForProfilePicture({
 			requestUserId: request.user.user.id,
-			assetOwnerId: id
+			assetId: id
 		});
 		if (!hasPermission) return unauthorized(401, { reason: "Unauthorized" });
 

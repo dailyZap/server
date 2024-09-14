@@ -180,7 +180,7 @@ export class ZapController extends Controller {
 
 		const userHasPermission = await userHasPermissionsForZapImage({
 			requestUserId: request.user.user.id,
-			assetOwnerId: zap.authorId
+			assetId: zap.id
 		});
 
 		if (!userHasPermission) return unauthorized(401, { reason: "Unauthorized" });

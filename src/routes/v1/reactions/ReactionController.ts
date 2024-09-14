@@ -35,7 +35,7 @@ export class ReactionController extends Controller {
 
 		const userHasPermission = await userHasPermissionsForReactionImage({
 			requestUserId: request.user.user.id,
-			assetOwnerId: reaction.authorId
+			assetId: reaction.id
 		});
 
 		if (!userHasPermission) return unauthorized(401, { reason: "Unauthorized" });
