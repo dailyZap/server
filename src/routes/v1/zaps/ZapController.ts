@@ -21,6 +21,7 @@ import {
 } from "tsoa";
 import { v7 } from "uuid";
 import { fromUUID, typeid } from "typeid-js";
+import { Region } from "@prisma/client";
 
 interface ZapResponseProps {
 	zapId: string;
@@ -46,12 +47,12 @@ export class ZapController extends Controller {
 	): Promise<ZapResponseProps> {
 		const currentMoment = await prisma.moment.findFirstOrThrow({
 			where: {
-				timestamp: {
+				[`timestamp${Region[request.user.user.region]}`]: {
 					lt: new Date()
 				}
 			},
 			orderBy: {
-				timestamp: "desc"
+				date: "desc"
 			}
 		});
 
@@ -130,12 +131,12 @@ export class ZapController extends Controller {
 	): Promise<void> {
 		const currentMoment = await prisma.moment.findFirstOrThrow({
 			where: {
-				timestamp: {
+				[`timestamp${Region[request.user.user.region]}`]: {
 					lt: new Date()
 				}
 			},
 			orderBy: {
-				timestamp: "desc"
+				date: "desc"
 			}
 		});
 
@@ -187,12 +188,12 @@ export class ZapController extends Controller {
 
 		const currentMoment = await prisma.moment.findFirstOrThrow({
 			where: {
-				timestamp: {
+				[`timestamp${Region[request.user.user.region]}`]: {
 					lt: new Date()
 				}
 			},
 			orderBy: {
-				timestamp: "desc"
+				date: "desc"
 			}
 		});
 

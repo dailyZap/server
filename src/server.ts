@@ -8,10 +8,13 @@ import { Buckets } from "./enums/Buckets";
 import { storage } from "./helpers/storage";
 import { checkAuth, client } from "./libs/push-gateway/services.gen";
 import { updateMomentsFromPushGateway } from "./helpers/moments";
+import { validateEnv } from "./helpers/env";
 
 const port = process.env.PORT || 80;
 
 async function main() {
+	validateEnv();
+
 	// ensure buckets
 	for (const bucket of Object.values(Buckets)) {
 		if (!(await storage.bucketExists(bucket)))

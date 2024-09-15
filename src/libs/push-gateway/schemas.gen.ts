@@ -19,12 +19,34 @@ export const MomentSchema = {
 		id: {
 			type: "string"
 		},
-		timestamp: {
+		date: {
 			type: "integer",
 			format: "date-time"
+		},
+		time: {
+			type: "object",
+			properties: {
+				EU: {
+					type: "integer",
+					format: "date-time"
+				},
+				US: {
+					type: "integer",
+					format: "date-time"
+				},
+				WA: {
+					type: "integer",
+					format: "date-time"
+				},
+				EA: {
+					type: "integer",
+					format: "date-time"
+				}
+			},
+			required: ["EU", "US", "WA", "EA"]
 		}
 	},
-	required: ["id", "timestamp"],
+	required: ["id", "date", "time"],
 	type: "object",
 	additionalProperties: false
 } as const;

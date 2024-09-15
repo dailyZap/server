@@ -8,6 +8,7 @@ import { RequestWithUser } from "../../../helpers/auth";
 import { Prefix } from "../../../enums/Prefix";
 import { lateTime } from "../../../const/lateTime";
 import { UserProps } from "../../../models/UserProps";
+import { Moment, Region } from "@prisma/client";
 
 interface Comment {
 	id: string;
@@ -66,23 +67,38 @@ export class FeedController extends Controller {
 	@Get()
 	public async getFeed(@Request() request: RequestWithUser): Promise<FeedResponseProps> {
 		const now = new Date();
-		const currentMoment = await prisma.moment.findFirstOrThrow({
-			where: {
-				timestamp: {
-					lt: now
+
+		const currentMoments: Record<Region, Moment> = Object.fromEntries(
+			await Promise.all(
+				Object.values(Region).map(async (region) => {
+					const moment = await prisma.moment.findFirstOrThrow({
+						where: {
+							[`timestamp${region}`]: {
+								lt: now
+							}
+						},
+						orderBy: {
+							date: "desc"
+						}
+					});
+					return [region, moment];
+				})
+			)
+		);
+
+		const zapWhereCondition = {
+			OR: Object.values(Region).map((region) => ({
+				momentId: currentMoments[region].id,
+				author: {
+					region: region
 				}
-			},
-			orderBy: {
-				timestamp: "desc"
-			}
-		});
+			}))
+		};
 
 		const content = await prisma.user.findMany({
 			where: {
 				zaps: {
-					some: {
-						momentId: currentMoment.id
-					}
+					some: zapWhereCondition
 				},
 				OR: [
 					{
@@ -108,7 +124,7 @@ export class FeedController extends Controller {
 				id: true,
 				zaps: {
 					where: {
-						momentId: currentMoment.id,
+						...zapWhereCondition,
 						uploaded: true
 					},
 					include: {
@@ -119,47 +135,12 @@ export class FeedController extends Controller {
 									uploaded: true
 								}
 							}
-						}
+						},
+						author: true
 					}
 				}
 			}
 		});
-
-		async function returnZapsWithReactionsAndComments(zaps: (typeof content)[0]["zaps"]) {
-			return await Promise.all(
-				zaps.map(async (zap) => {
-					const lateBy =
-						extractTimeFromTypeIdAsNumber(zap.id, Prefix.ZAP) -
-						(currentMoment.timestamp.getTime() + lateTime);
-					return {
-						id: zap.id,
-						frontCameraUrl: getZapUrl(zap.id, ZapImageType.FRONT),
-						backCameraUrl: getZapUrl(zap.id, ZapImageType.BACK),
-						timestamp: extractTimeFromTypeIdAsNumber(zap.id, Prefix.ZAP),
-						lateBy: lateBy > 0 ? lateBy : undefined,
-						comments: zap.comments.map((comment) => ({
-							id: comment.id,
-							authorId: comment.authorId,
-							content: comment.content,
-							timestamp: extractTimeFromTypeIdAsNumber(comment.id, Prefix.COMMENT)
-						})),
-						reactions: await Promise.all(
-							zap.reactions.map(async (reaction) => ({
-								id: reaction.id,
-								authorId: reaction.authorId,
-								type: ReactionType[reaction.type],
-								imageUrl: await getPresignedReactionUrl({
-									authorId: reaction.authorId,
-									reactionType: ReactionType[reaction.type],
-									reactionImageId: reaction.imageId
-								}),
-								timestamp: extractTimeFromTypeIdAsNumber(reaction.id, Prefix.REACTION)
-							}))
-						)
-					};
-				})
-			);
-		}
 
 		const myContentIndex = content.findIndex((user) => user.id === request.user.user.id);
 
@@ -193,7 +174,8 @@ export class FeedController extends Controller {
 						handle: true,
 						firstName: true,
 						lastName: true,
-						profilePictureVersion: true
+						profilePictureVersion: true,
+						region: true
 					}
 				})
 			).map(async (author) => ({
@@ -201,6 +183,43 @@ export class FeedController extends Controller {
 				profilePictureUrl: getProfilePictureUrl(author.id, author.profilePictureVersion)
 			}))
 		);
+
+		async function returnZapsWithReactionsAndComments(zaps: (typeof content)[0]["zaps"]) {
+			return await Promise.all(
+				zaps.map(async (zap) => {
+					const region = authors.find((author) => author.id === zap.authorId)!.region;
+					const lateBy =
+						extractTimeFromTypeIdAsNumber(zap.id, Prefix.ZAP) -
+						(currentMoments[region][`timestamp${region}`].getTime() + lateTime);
+					return {
+						id: zap.id,
+						frontCameraUrl: getZapUrl(zap.id, ZapImageType.FRONT),
+						backCameraUrl: getZapUrl(zap.id, ZapImageType.BACK),
+						timestamp: extractTimeFromTypeIdAsNumber(zap.id, Prefix.ZAP),
+						lateBy: lateBy > 0 ? lateBy : undefined,
+						comments: zap.comments.map((comment) => ({
+							id: comment.id,
+							authorId: comment.authorId,
+							content: comment.content,
+							timestamp: extractTimeFromTypeIdAsNumber(comment.id, Prefix.COMMENT)
+						})),
+						reactions: await Promise.all(
+							zap.reactions.map(async (reaction) => ({
+								id: reaction.id,
+								authorId: reaction.authorId,
+								type: ReactionType[reaction.type],
+								imageUrl: await getPresignedReactionUrl({
+									authorId: reaction.authorId,
+									reactionType: ReactionType[reaction.type],
+									reactionImageId: reaction.imageId
+								}),
+								timestamp: extractTimeFromTypeIdAsNumber(reaction.id, Prefix.REACTION)
+							}))
+						)
+					};
+				})
+			);
+		}
 
 		const response = {
 			myZaps: await returnZapsWithReactionsAndComments(myZaps),

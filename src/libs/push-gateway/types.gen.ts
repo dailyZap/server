@@ -7,7 +7,13 @@ export type Notification = {
 
 export type Moment = {
 	id: string;
-	timestamp: number;
+	date: number;
+	time: {
+		EU: number;
+		US: number;
+		WA: number;
+		EA: number;
+	};
 };
 
 export type SendNotificationsData = {

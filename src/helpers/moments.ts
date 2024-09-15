@@ -4,12 +4,12 @@ import { prisma } from "./db";
 export async function updateMomentsFromPushGateway() {
 	const lastMoment = await prisma.moment.findFirst({
 		orderBy: {
-			timestamp: "desc"
+			date: "desc"
 		}
 	});
 
 	const moments = await getMoments({
-		query: { after: lastMoment ? lastMoment.timestamp.getTime() : undefined }
+		query: { after: lastMoment ? lastMoment.date.getTime() : undefined }
 	});
 
 	if (!moments.data?.moments) {
@@ -21,7 +21,15 @@ export async function updateMomentsFromPushGateway() {
 		await prisma.moment.create({
 			data: {
 				id: moment.id,
-				timestamp: new Date(moment.timestamp)
+				date: new Date(moment.date),
+				// europe
+				timestampEU: new Date(moment.time.EU),
+				// america
+				timestampUS: new Date(moment.time.US),
+				// west asia
+				timestampWA: new Date(moment.time.WA),
+				// east asia
+				timestampEA: new Date(moment.time.EA)
 			}
 		});
 	}

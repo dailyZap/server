@@ -16,13 +16,14 @@ import {
 } from "tsoa";
 import { fromString, toUUID, typeid } from "typeid-js";
 import { randomInt, randomBytes } from "node:crypto";
-import { Prisma } from "@prisma/client";
+import { Prisma, Region } from "@prisma/client";
 
 interface UserCreationParams {
 	handle: string;
 	email: string;
 	firstName: string;
 	lastName: string;
+	region: Region;
 }
 
 interface UserOTPParams {
@@ -89,7 +90,8 @@ export class AuthController extends Controller {
 					firstName: userParams.firstName,
 					lastName: userParams.lastName,
 					otp,
-					loginToken
+					loginToken,
+					region: userParams.region
 				}
 			})
 			.catch((error) => {
