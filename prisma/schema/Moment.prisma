@@ -1,7 +1,15 @@
 model Moment {
   id String @id
 
-  timestamp DateTime
+  date        DateTime @unique
+  // europe
+  timestampEU DateTime
+  // america
+  timestampUS DateTime
+  // west asia
+  timestampWA DateTime
+  // east asia
+  timestampEA DateTime
 
   zaps Zap[]
 }
