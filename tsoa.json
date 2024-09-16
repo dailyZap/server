@@ -10,6 +10,14 @@
 				"type": "http",
 				"scheme": "bearer"
 			}
+		},
+		"spec": {
+			"servers": [
+				{
+					"url": "/",
+					"description": ""
+				}
+			]
 		}
 	},
 	"routes": {
