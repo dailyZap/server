@@ -8,7 +8,8 @@ import { RequestWithUser } from "../../../helpers/auth";
 import { Prefix } from "../../../enums/Prefix";
 import { lateTime } from "../../../const/lateTime";
 import { UserProps } from "../../../models/UserProps";
-import { Moment, Region } from "@prisma/client";
+import { Moment } from "@prisma/client";
+import { Region } from "../../../enums/Region";
 
 interface Comment {
 	id: string;

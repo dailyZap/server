@@ -21,7 +21,7 @@ import {
 } from "tsoa";
 import { v7 } from "uuid";
 import { fromUUID, typeid } from "typeid-js";
-import { Region } from "@prisma/client";
+import { Region } from "../../../enums/Region";
 
 interface ZapResponseProps {
 	zapId: string;

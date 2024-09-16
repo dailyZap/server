@@ -1,7 +1,7 @@
-import { Prefix } from "../../../../src/enums/Prefix";
-import { prisma } from "../../../../src/helpers/db";
-import { mailer } from "../../../../src/helpers/mail";
-import { extractTimestampFromUUIDv7 } from "../../../../src/helpers/time";
+import { Prefix } from "../../../enums/Prefix";
+import { prisma } from "../../../helpers/db";
+import { mailer } from "../../../helpers/mail";
+import { extractTimestampFromUUIDv7 } from "../../../helpers/time";
 import {
 	Body,
 	Controller,
@@ -16,7 +16,8 @@ import {
 } from "tsoa";
 import { fromString, toUUID, typeid } from "typeid-js";
 import { randomInt, randomBytes } from "node:crypto";
-import { Prisma, Region } from "@prisma/client";
+import { Prisma } from "@prisma/client";
+import { Region } from "../../../enums/Region";
 
 interface UserCreationParams {
 	handle: string;

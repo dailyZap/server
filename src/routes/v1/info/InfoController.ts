@@ -1,12 +1,12 @@
 import { Controller, Get, Route, Tags } from "tsoa";
 import { name, version } from "../../../../package.json";
-import { Region } from "@prisma/client";
+import { Region } from "../../../enums/Region";
 
 interface ServerInfoResponse {
 	endpoint: string;
 	name: string;
 	version: string;
-	homeRegion: Region;
+	region: Region;
 }
 
 @Tags("Info")
@@ -20,8 +20,8 @@ export class InfoController extends Controller {
 		const isDefaultPort = port == "80" || port == "443";
 
 		const endpoint = `http${isSSL ? "s" : ""}://${host}${isDefaultPort ? "" : ":" + port}`;
-		const homeRegion = (process.env.HOME_REGION as keyof typeof Region) ?? "EU";
+		const region = (process.env.REGION as Region) ?? Region.EU;
 
-		return { endpoint, name, version, homeRegion };
+		return { endpoint, name, version, region };
 	}
 }
