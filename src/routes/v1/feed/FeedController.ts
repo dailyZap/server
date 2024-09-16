@@ -180,7 +180,11 @@ export class FeedController extends Controller {
 					}
 				})
 			).map(async (author) => ({
-				...author,
+				id: author.id,
+				handle: author.handle,
+				firstName: author.firstName,
+				lastName: author.lastName,
+				region: Region[author.region],
 				profilePictureUrl: getProfilePictureUrl(author.id, author.profilePictureVersion)
 			}))
 		);

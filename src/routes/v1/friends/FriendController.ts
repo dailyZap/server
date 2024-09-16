@@ -19,6 +19,7 @@ import {
 } from "tsoa";
 import { UserProps } from "../../../models/UserProps";
 import { getProfilePictureUrl } from "../../../helpers/storage";
+import { Region } from "../../../enums/Region";
 
 interface FriendsResponseProps {
 	friends: UserProps[];
@@ -246,6 +247,7 @@ export class FriendController extends Controller {
 						handle: friend.handle,
 						firstName: friend.firstName,
 						lastName: friend.lastName,
+						region: Region[friend.region],
 						profilePictureUrl: getProfilePictureUrl(friend.id, friend.profilePictureVersion)
 					};
 				})
@@ -309,6 +311,7 @@ export class FriendController extends Controller {
 						handle: sender.handle,
 						firstName: sender.firstName,
 						lastName: sender.lastName,
+						region: Region[sender.region],
 						profilePictureUrl: getProfilePictureUrl(sender.id, sender.profilePictureVersion)
 					};
 				})
@@ -320,6 +323,7 @@ export class FriendController extends Controller {
 						handle: receiver.handle,
 						firstName: receiver.firstName,
 						lastName: receiver.lastName,
+						region: Region[receiver.region],
 						profilePictureUrl: getProfilePictureUrl(receiver.id, receiver.profilePictureVersion)
 					};
 				})
