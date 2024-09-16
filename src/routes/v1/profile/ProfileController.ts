@@ -5,13 +5,13 @@ import { RequestWithUser } from "src/helpers/auth";
 import { prisma } from "../../../helpers/db";
 import { getInviteUrl } from "../../../helpers/invite";
 import { Region } from "../../../enums/Region";
-import { UserResponse } from "../../../models/v1/User";
+import { User } from "../../../models/v1/User";
 
-interface ProfileResponse extends UserResponse {
+interface Profile extends User {
 	inviteUrl?: string;
 }
 
-interface SetPictureResponse {
+interface ProfilePictureUploadInfo {
 	uploadUrl: string;
 }
 
@@ -35,7 +35,9 @@ export class ProfileController extends Controller {
 	}
 
 	@Put("picture")
-	public async setProfilePicture(@Request() request: RequestWithUser): Promise<SetPictureResponse> {
+	public async setProfilePicture(
+		@Request() request: RequestWithUser
+	): Promise<ProfilePictureUploadInfo> {
 		return {
 			uploadUrl: await storage.presignedPutObject(
 				Buckets.AVATARS,
@@ -75,7 +77,7 @@ export class ProfileController extends Controller {
 	}
 
 	@Get()
-	public async getProfile(@Request() request: RequestWithUser): Promise<ProfileResponse> {
+	public async getProfile(@Request() request: RequestWithUser): Promise<Profile> {
 		const invite = await prisma.invite.findUnique({
 			where: {
 				userId: request.user.user.id

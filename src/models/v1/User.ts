@@ -1,6 +1,6 @@
 import { Region } from "../../enums/Region";
 
-export interface UserResponse {
+export interface User {
 	id: string;
 	handle: string;
 	firstName: string;

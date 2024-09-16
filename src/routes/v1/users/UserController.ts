@@ -1,4 +1,4 @@
-import { UserResponse } from "../../../models/v1/User";
+import { User } from "../../../models/v1/User";
 import { Buckets } from "../../../enums/Buckets";
 import { userHasPermissionsForProfilePicture, RequestWithUser } from "../../../helpers/auth";
 import { prisma } from "../../../helpers/db";
@@ -23,7 +23,7 @@ import { Region } from "../../../enums/Region";
 @Security("sessionToken")
 export class UsersController extends Controller {
 	@Get("{id}")
-	public async getUserById(@Path() id: string): Promise<UserResponse> {
+	public async getUserById(@Path() id: string): Promise<User> {
 		const user = await prisma.user.findUnique({ where: { id } });
 
 		if (!user) {
@@ -68,7 +68,7 @@ export class UsersController extends Controller {
 	}
 
 	@Get()
-	public async getUserByHandle(@Query() handle?: string): Promise<UserResponse[]> {
+	public async getUserByHandle(@Query() handle?: string): Promise<User[]> {
 		const user = await prisma.user.findMany({ where: { handle } });
 
 		if (user.length === 0) {

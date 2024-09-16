@@ -23,13 +23,13 @@ import { v7 } from "uuid";
 import { fromUUID, typeid } from "typeid-js";
 import { Region } from "../../../enums/Region";
 
-interface SetZapResponse {
+interface ZapUploadInfo {
 	zapId: string;
 	uploadFrontUrl: string;
 	uploadBackUrl: string;
 }
 
-interface ZapCreation {
+interface ZapCreationParams {
 	/**
 	 * @isInt
 	 */
@@ -43,8 +43,8 @@ export class ZapController extends Controller {
 	@Put()
 	public async createZap(
 		@Request() request: RequestWithUser,
-		@Body() userParams: ZapCreation
-	): Promise<SetZapResponse> {
+		@Body() userParams: ZapCreationParams
+	): Promise<ZapUploadInfo> {
 		const currentMoment = await prisma.moment.findFirstOrThrow({
 			where: {
 				[`timestamp${Region[request.user.user.region]}`]: {

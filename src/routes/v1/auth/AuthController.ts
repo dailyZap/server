@@ -19,7 +19,7 @@ import { randomInt, randomBytes } from "node:crypto";
 import { Prisma } from "@prisma/client";
 import { Region } from "../../../enums/Region";
 
-interface UserCreation {
+interface UserCreationParams {
 	handle: string;
 	email: string;
 	firstName: string;
@@ -27,27 +27,23 @@ interface UserCreation {
 	region: Region;
 }
 
-interface UserAuth {
+interface OTPParams {
 	loginToken: string;
 	otp: string;
 	deviceToken: string;
 }
 
-interface UserLogin {
+interface LoginParams {
 	handleOrEmail: string;
 }
 
 type UserUniqueFields = "handle" | "email";
 
-interface RegisterResponse {
+interface LoginToken {
 	loginToken: string;
 }
 
-interface LoginResponse {
-	loginToken: string;
-}
-
-interface OTPResponse {
+interface Session {
 	sessionToken: string;
 }
 
@@ -73,10 +69,10 @@ export class AuthController extends Controller {
 	@SuccessResponse("201", "Created")
 	@Put("register")
 	public async register(
-		@Body() userParams: UserCreation,
+		@Body() userParams: UserCreationParams,
 		@Res() failedUniqueConstraint: TsoaResponse<409, { reason: string; field: UserUniqueFields }>,
 		@Res() failedMailDelivery: TsoaResponse<500, { reason: string; description: string }>
-	): Promise<RegisterResponse> {
+	): Promise<LoginToken> {
 		// TODO: Validate E-Mail
 
 		const otp = randomInt(100000, 999999).toString();
@@ -126,10 +122,10 @@ export class AuthController extends Controller {
 
 	@Post("login")
 	public async login(
-		@Body() userParams: UserLogin,
+		@Body() userParams: LoginParams,
 		@Res() invalidUser: TsoaResponse<404, { reason: string }>,
 		@Res() failedMailDelivery: TsoaResponse<500, { reason: string; description: string }>
-	): Promise<LoginResponse> {
+	): Promise<LoginToken> {
 		const user = await prisma.user.findFirst({
 			where: {
 				OR: [
@@ -177,10 +173,10 @@ export class AuthController extends Controller {
 
 	@Post("otp")
 	public async otp(
-		@Body() userParams: UserAuth,
+		@Body() userParams: OTPParams,
 		@Res() unauthorized: TsoaResponse<401, { reason: string }>,
 		@Res() forbidden: TsoaResponse<403, { reason: string }>
-	): Promise<OTPResponse> {
+	): Promise<Session> {
 		const user = await prisma.user.findFirst({
 			where: {
 				loginToken: userParams.loginToken

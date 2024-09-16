@@ -7,21 +7,21 @@ import { ZapImageType } from "../../../enums/ZapImageType";
 import { RequestWithUser } from "../../../helpers/auth";
 import { Prefix } from "../../../enums/Prefix";
 import { lateTime } from "../../../const/lateTime";
-import { UserResponse } from "../../../models/v1/User";
+import { User } from "../../../models/v1/User";
 import { Moment } from "@prisma/client";
 import { Region } from "../../../enums/Region";
-import { ZapResponse } from "../../../models/v1/Zap";
+import { Zap } from "../../../models/v1/Zap";
 
-interface ContentResponse {
+interface Content {
 	userId: string;
-	zaps: ZapResponse[];
+	zaps: Zap[];
 }
 
-interface FeedResponse {
-	myZaps: ZapResponse[];
+interface Feed {
+	myZaps: Zap[];
 	friend: {
-		content: ContentResponse[];
-		users: UserResponse[];
+		content: Content[];
+		users: User[];
 	};
 }
 
@@ -30,7 +30,7 @@ interface FeedResponse {
 @Security("sessionToken")
 export class FeedController extends Controller {
 	@Get()
-	public async getFeed(@Request() request: RequestWithUser): Promise<FeedResponse> {
+	public async getFeed(@Request() request: RequestWithUser): Promise<Feed> {
 		const now = new Date();
 
 		const currentMoments: Record<Region, Moment> = Object.fromEntries(

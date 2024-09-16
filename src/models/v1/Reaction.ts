@@ -1,6 +1,6 @@
 import { ReactionType } from "../../enums/ReactionType";
 
-export interface ReactionResponse {
+export interface Reaction {
 	id: string;
 	authorId: string;
 	type: ReactionType;

@@ -1,7 +1,7 @@
-import { CommentResponse } from "./Comment";
-import { ReactionResponse } from "./Reaction";
+import { Comment } from "./Comment";
+import { Reaction } from "./Reaction";
 
-export interface ZapResponse {
+export interface Zap {
 	id: string;
 	frontCameraUrl: string;
 	backCameraUrl: string;
@@ -13,6 +13,6 @@ export interface ZapResponse {
 	 * @isInt
 	 */
 	lateBy?: number;
-	comments: CommentResponse[];
-	reactions: ReactionResponse[];
+	comments: Comment[];
+	reactions: Reaction[];
 }

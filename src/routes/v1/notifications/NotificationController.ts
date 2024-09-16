@@ -2,15 +2,15 @@ import { RequestWithUser } from "../../../helpers/auth";
 import { prisma } from "../../../helpers/db";
 import { Controller, Path, Post, Res, Route, Security, Tags, TsoaResponse, Request } from "tsoa";
 
-interface NotificationResponse {
+interface Notification {
 	type: NotificationType;
 	targetId?: string;
 	title: String;
 	content: String;
 }
 
-interface NotificationsResponse {
-	notifications: NotificationResponse[];
+interface Notifications {
+	notifications: Notification[];
 }
 
 type NotificationType =
@@ -30,7 +30,7 @@ export class NotificationController extends Controller {
 		@Path() id: string,
 		@Res() invalid: TsoaResponse<404, { reason: string }>,
 		@Request() request: RequestWithUser
-	): Promise<NotificationResponse> {
+	): Promise<Notification> {
 		const notification = await prisma.notification.findUnique({ where: { id } });
 
 		if (!notification || notification.userId !== request.user.user.id)
@@ -47,9 +47,7 @@ export class NotificationController extends Controller {
 	}
 
 	@Post()
-	public async fetchNotifications(
-		@Request() request: RequestWithUser
-	): Promise<NotificationsResponse> {
+	public async fetchNotifications(@Request() request: RequestWithUser): Promise<Notifications> {
 		const notifications = await prisma.notification.findMany({
 			where: {
 				userId: request.user.user.id

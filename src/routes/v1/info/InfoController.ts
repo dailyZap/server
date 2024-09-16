@@ -2,7 +2,7 @@ import { Controller, Get, Route, Tags } from "tsoa";
 import { name, version } from "../../../../package.json";
 import { Region } from "../../../enums/Region";
 
-interface ServerInfoResponse {
+interface ServerInfo {
 	endpoint: string;
 	name: string;
 	version: string;
@@ -13,7 +13,7 @@ interface ServerInfoResponse {
 @Route("v1/info")
 export class InfoController extends Controller {
 	@Get()
-	public async getServerInfo(): Promise<ServerInfoResponse> {
+	public async getServerInfo(): Promise<ServerInfo> {
 		const host = process.env.HOST;
 		const port = process.env.PORT;
 		const isSSL = process.env.SSL == "true";
