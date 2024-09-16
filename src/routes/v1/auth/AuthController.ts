@@ -19,7 +19,7 @@ import { randomInt, randomBytes } from "node:crypto";
 import { Prisma } from "@prisma/client";
 import { Region } from "../../../enums/Region";
 
-interface UserCreationParams {
+interface UserCreation {
 	handle: string;
 	email: string;
 	firstName: string;
@@ -27,27 +27,27 @@ interface UserCreationParams {
 	region: Region;
 }
 
-interface UserOTPParams {
+interface UserAuth {
 	loginToken: string;
 	otp: string;
 	deviceToken: string;
 }
 
-interface UserLoginParams {
+interface UserLogin {
 	handleOrEmail: string;
 }
 
-type uniqueFields = "handle" | "email";
+type UserUniqueFields = "handle" | "email";
 
-interface RegisterReturnParams {
+interface RegisterResponse {
 	loginToken: string;
 }
 
-interface LoginReturnParams {
+interface LoginResponse {
 	loginToken: string;
 }
 
-interface OTPReturnParams {
+interface OTPResponse {
 	sessionToken: string;
 }
 
@@ -73,10 +73,10 @@ export class AuthController extends Controller {
 	@SuccessResponse("201", "Created")
 	@Put("register")
 	public async register(
-		@Body() userParams: UserCreationParams,
-		@Res() failedUniqueConstraint: TsoaResponse<409, { reason: string; field: uniqueFields }>,
+		@Body() userParams: UserCreation,
+		@Res() failedUniqueConstraint: TsoaResponse<409, { reason: string; field: UserUniqueFields }>,
 		@Res() failedMailDelivery: TsoaResponse<500, { reason: string; description: string }>
-	): Promise<RegisterReturnParams> {
+	): Promise<RegisterResponse> {
 		// TODO: Validate E-Mail
 
 		const otp = randomInt(100000, 999999).toString();
@@ -97,7 +97,7 @@ export class AuthController extends Controller {
 			})
 			.catch((error) => {
 				if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
-					const field = (error.meta!.target as uniqueFields[])[0];
+					const field = (error.meta!.target as UserUniqueFields[])[0];
 					return failedUniqueConstraint(409, { reason: `Field not unique`, field });
 				}
 			});
@@ -126,10 +126,10 @@ export class AuthController extends Controller {
 
 	@Post("login")
 	public async login(
-		@Body() userParams: UserLoginParams,
+		@Body() userParams: UserLogin,
 		@Res() invalidUser: TsoaResponse<404, { reason: string }>,
 		@Res() failedMailDelivery: TsoaResponse<500, { reason: string; description: string }>
-	): Promise<LoginReturnParams> {
+	): Promise<LoginResponse> {
 		const user = await prisma.user.findFirst({
 			where: {
 				OR: [
@@ -177,10 +177,10 @@ export class AuthController extends Controller {
 
 	@Post("otp")
 	public async otp(
-		@Body() userParams: UserOTPParams,
+		@Body() userParams: UserAuth,
 		@Res() unauthorized: TsoaResponse<401, { reason: string }>,
 		@Res() forbidden: TsoaResponse<403, { reason: string }>
-	): Promise<OTPReturnParams> {
+	): Promise<OTPResponse> {
 		const user = await prisma.user.findFirst({
 			where: {
 				loginToken: userParams.loginToken

@@ -5,22 +5,17 @@ import { RequestWithUser } from "src/helpers/auth";
 import { prisma } from "../../../helpers/db";
 import { getInviteUrl } from "../../../helpers/invite";
 import { Region } from "../../../enums/Region";
+import { UserResponse } from "../../../models/v1/User";
 
-interface ProfileResponseProps {
-	id: string;
-	handle: string;
-	firstName: string;
-	lastName: string;
-	region: Region;
-	pictureUrl: string;
+interface ProfileResponse extends UserResponse {
 	inviteUrl?: string;
 }
 
-interface SetPictureResponseProps {
+interface SetPictureResponse {
 	uploadUrl: string;
 }
 
-interface RegionUpdateParams {
+interface RegionUpdate {
 	region: Region;
 }
 
@@ -40,9 +35,7 @@ export class ProfileController extends Controller {
 	}
 
 	@Put("picture")
-	public async setProfilePicture(
-		@Request() request: RequestWithUser
-	): Promise<SetPictureResponseProps> {
+	public async setProfilePicture(@Request() request: RequestWithUser): Promise<SetPictureResponse> {
 		return {
 			uploadUrl: await storage.presignedPutObject(
 				Buckets.AVATARS,
@@ -69,7 +62,7 @@ export class ProfileController extends Controller {
 	@Put("region")
 	public async setRegion(
 		@Request() request: RequestWithUser,
-		@Body() userParams: RegionUpdateParams
+		@Body() userParams: RegionUpdate
 	): Promise<void> {
 		await prisma.user.update({
 			where: {
@@ -82,7 +75,7 @@ export class ProfileController extends Controller {
 	}
 
 	@Get()
-	public async getProfile(@Request() request: RequestWithUser): Promise<ProfileResponseProps> {
+	public async getProfile(@Request() request: RequestWithUser): Promise<ProfileResponse> {
 		const invite = await prisma.invite.findUnique({
 			where: {
 				userId: request.user.user.id
@@ -98,7 +91,7 @@ export class ProfileController extends Controller {
 			firstName: request.user.user.firstName,
 			lastName: request.user.user.lastName,
 			region: Region[request.user.user.region],
-			pictureUrl: await storage.presignedGetObject(
+			profilePictureUrl: await storage.presignedGetObject(
 				Buckets.AVATARS,
 				`${request.user.user.id}.jpg`,
 				15 * 60

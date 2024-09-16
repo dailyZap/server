@@ -7,57 +7,21 @@ import { ZapImageType } from "../../../enums/ZapImageType";
 import { RequestWithUser } from "../../../helpers/auth";
 import { Prefix } from "../../../enums/Prefix";
 import { lateTime } from "../../../const/lateTime";
-import { UserProps } from "../../../models/UserProps";
+import { UserResponse } from "../../../models/v1/User";
 import { Moment } from "@prisma/client";
 import { Region } from "../../../enums/Region";
+import { ZapResponse } from "../../../models/v1/Zap";
 
-interface Comment {
-	id: string;
-	authorId: string;
-	content: string;
-	/**
-	 * @isInt
-	 */
-	timestamp: number;
-}
-
-interface Reaction {
-	id: string;
-	authorId: string;
-	type: ReactionType;
-	imageUrl: string;
-	/**
-	 * @isInt
-	 */
-	timestamp: number;
-}
-
-interface Zap {
-	id: string;
-	frontCameraUrl: string;
-	backCameraUrl: string;
-	/**
-	 * @isInt
-	 */
-	timestamp: number;
-	/**
-	 * @isInt
-	 */
-	lateBy?: number;
-	comments: Comment[];
-	reactions: Reaction[];
-}
-
-interface Content {
+interface ContentResponse {
 	userId: string;
-	zaps: Zap[];
+	zaps: ZapResponse[];
 }
 
-interface FeedResponseProps {
-	myZaps: Zap[];
+interface FeedResponse {
+	myZaps: ZapResponse[];
 	friend: {
-		content: Content[];
-		users: UserProps[];
+		content: ContentResponse[];
+		users: UserResponse[];
 	};
 }
 
@@ -66,7 +30,7 @@ interface FeedResponseProps {
 @Security("sessionToken")
 export class FeedController extends Controller {
 	@Get()
-	public async getFeed(@Request() request: RequestWithUser): Promise<FeedResponseProps> {
+	public async getFeed(@Request() request: RequestWithUser): Promise<FeedResponse> {
 		const now = new Date();
 
 		const currentMoments: Record<Region, Moment> = Object.fromEntries(

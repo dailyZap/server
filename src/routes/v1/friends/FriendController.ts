@@ -17,17 +17,17 @@ import {
 	TsoaResponse,
 	Post
 } from "tsoa";
-import { UserProps } from "../../../models/UserProps";
+import { UserResponse } from "../../../models/v1/User";
 import { getProfilePictureUrl } from "../../../helpers/storage";
 import { Region } from "../../../enums/Region";
 
-interface FriendsResponseProps {
-	friends: UserProps[];
+interface FriendsResponse {
+	friends: UserResponse[];
 }
 
-interface FriendRequestsResponseProps {
-	incoming: UserProps[];
-	outgoing: UserProps[];
+interface FriendRequestsResponse {
+	incoming: UserResponse[];
+	outgoing: UserResponse[];
 }
 
 @Tags("Friends")
@@ -209,7 +209,7 @@ export class FriendController extends Controller {
 	}
 
 	@Get()
-	public async getFriends(@Request() request: RequestWithUser): Promise<FriendsResponseProps> {
+	public async getFriends(@Request() request: RequestWithUser): Promise<FriendsResponse> {
 		const friendshipIds = await prisma.friendship.findMany({
 			where: {
 				OR: [
@@ -258,7 +258,7 @@ export class FriendController extends Controller {
 	@Get("requests")
 	public async getFriendRequests(
 		@Request() request: RequestWithUser
-	): Promise<FriendRequestsResponseProps> {
+	): Promise<FriendRequestsResponse> {
 		const friendRequests = await prisma.friendRequest.findMany({
 			where: {
 				OR: [

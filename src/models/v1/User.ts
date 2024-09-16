@@ -1,6 +1,6 @@
-import { Region } from "../enums/Region";
+import { Region } from "../../enums/Region";
 
-export interface UserProps {
+export interface UserResponse {
 	id: string;
 	handle: string;
 	firstName: string;

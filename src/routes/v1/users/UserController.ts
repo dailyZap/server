@@ -1,3 +1,4 @@
+import { UserResponse } from "../../../models/v1/User";
 import { Buckets } from "../../../enums/Buckets";
 import { userHasPermissionsForProfilePicture, RequestWithUser } from "../../../helpers/auth";
 import { prisma } from "../../../helpers/db";
@@ -15,22 +16,14 @@ import {
 	Res,
 	TsoaResponse
 } from "tsoa";
-
-interface UserGetParams {
-	id: string;
-	handle: string;
-	firstName: string;
-	lastName: string;
-}
-
-// src/users/usersController.ts
+import { Region } from "../../../enums/Region";
 
 @Tags("Users")
 @Route("v1/users")
 @Security("sessionToken")
 export class UsersController extends Controller {
 	@Get("{id}")
-	public async getUserById(@Path() id: string): Promise<UserGetParams> {
+	public async getUserById(@Path() id: string): Promise<UserResponse> {
 		const user = await prisma.user.findUnique({ where: { id } });
 
 		if (!user) {
@@ -43,7 +36,13 @@ export class UsersController extends Controller {
 			id: user.id,
 			handle: user.handle,
 			firstName: user.firstName,
-			lastName: user.lastName
+			lastName: user.lastName,
+			region: Region[user.region],
+			profilePictureUrl: await storage.presignedGetObject(
+				Buckets.AVATARS,
+				`${user.id}.jpg`,
+				15 * 60
+			)
 		};
 	}
 
@@ -69,7 +68,7 @@ export class UsersController extends Controller {
 	}
 
 	@Get()
-	public async getUserByHandle(@Query() handle?: string): Promise<UserGetParams[]> {
+	public async getUserByHandle(@Query() handle?: string): Promise<UserResponse[]> {
 		const user = await prisma.user.findMany({ where: { handle } });
 
 		if (user.length === 0) {
@@ -82,7 +81,9 @@ export class UsersController extends Controller {
 				id: u.id,
 				handle: u.handle,
 				firstName: u.firstName,
-				lastName: u.lastName
+				lastName: u.lastName,
+				region: Region[u.region],
+				profilePictureUrl: await storage.presignedGetObject(Buckets.AVATARS, `${u.id}.jpg`, 15 * 60)
 			});
 		}
 		return response;
