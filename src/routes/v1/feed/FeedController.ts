@@ -113,6 +113,7 @@ export class FeedController extends Controller {
 		content.splice(myContentIndex, 1);
 
 		const authorIds = new Set<string>();
+		authorIds.add(request.user.user.id);
 
 		for (const user of content) {
 			authorIds.add(user.id);
