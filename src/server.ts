@@ -27,7 +27,10 @@ async function main() {
 	console.log(`Server Invite Link: ${getInviteUrl(invite.code)}`);
 
 	client.setConfig({
-		baseUrl: process.env.PUSH_GATEWAY_URL!
+		baseUrl:
+			process.env.NODE_ENV == "development"
+				? process.env.PUSH_GATEWAY_URL!
+				: "https://gateway.dailyzap.me/api"
 	});
 
 	client.interceptors.request.use((request: any) => {
