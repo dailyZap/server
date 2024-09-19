@@ -31,7 +31,8 @@ __metadata:
   dependencies:
     "@hey-api/client-fetch": "npm:^0.2.4"
     "@hey-api/openapi-ts": "npm:^0.53.0"
-    "@prisma/client": "npm:5.19.1"
+    "@prisma/client": "npm:^5.19.1"
+    "@tsoa/runtime": "npm:^6.4.0"
     "@types/express": "npm:^4.17.21"
     "@types/node": "npm:^22.5.4"
     "@types/nodemailer": "npm:^6.4.15"
@@ -44,7 +45,7 @@ __metadata:
     minio: "npm:^8.0.1"
     nodemailer: "npm:^6.9.15"
     nodemon: "npm:^3.1.4"
-    prisma: "npm:5.19.1"
+    prisma: "npm:^5.19.1"
     swagger-ui-express: "npm:^5.0.1"
     ts-node: "npm:^10.9.2"
     tsoa: "npm:^6.4.0"
@@ -475,7 +476,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@prisma/client@npm:5.19.1":
+"@prisma/client@npm:^5.19.1":
   version: 5.19.1
   resolution: "@prisma/client@npm:5.19.1"
   peerDependencies:
@@ -2645,7 +2646,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prisma@npm:5.19.1":
+"prisma@npm:^5.19.1":
   version: 5.19.1
   resolution: "prisma@npm:5.19.1"
   dependencies:
