@@ -39,14 +39,12 @@ async function main() {
 	});
 
 	const response = await checkAuth().catch(() => {
-		console.error("Failed to connect to push gateway");
-		process.exit(1);
+		console.error(
+			"Failed to connect to push gateway! Please register at https://gateway.dailyzap.me or check your API key! The Server will not be able to serve requests without a connection to the push gateway."
+		);
 	});
 
-	if (response.error) {
-		console.error("Failed to authenticate with push gateway");
-		process.exit(1);
-	} else {
+	if (response) {
 		console.log("Connected to push gateway");
 	}
 

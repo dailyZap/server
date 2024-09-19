@@ -39,6 +39,16 @@ app.use("/docs", swaggerUi.serve, async (_req: ExRequest, res: ExResponse) => {
 	return res.send(swaggerUi.generateHTML(await import("../build/swagger.json")));
 });
 
+// if there is no api key, disallow everything but /api/v1/info
+// in order to be able to register with the push gateway
+app.use((req, res, next) => {
+	console.log(req.path);
+	if (req.path == "/v1/info") return next();
+	if (!process.env.PUSH_GATEWAY_API_KEY)
+		return res.status(500).send("API Key not set, see container logs for more info!");
+	next();
+});
+
 RegisterRoutes(app);
 
 app.use(
