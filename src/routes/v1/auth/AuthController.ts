@@ -157,7 +157,7 @@ export class AuthController extends Controller {
 		await mailer
 			.sendMail({
 				from: process.env.MAIL_FROM,
-				to: user.email,
+				to: `${user.firstName} ${user.lastName} <${user.email}>`,
 				subject: "One-Time Password",
 				text: `Your One-Time Password is: ${otp}`
 			})
