@@ -8,7 +8,7 @@ import { Region } from "../../../enums/Region";
 import { User } from "../../../models/v1/User";
 
 interface Profile extends User {
-	inviteUrl?: string;
+	inviteUrl: string;
 }
 
 interface ProfilePictureUploadInfo {
@@ -78,7 +78,7 @@ export class ProfileController extends Controller {
 
 	@Get()
 	public async getProfile(@Request() request: RequestWithUser): Promise<Profile> {
-		const invite = await prisma.invite.findUnique({
+		const invite = await prisma.invite.findUniqueOrThrow({
 			where: {
 				userId: request.user.user.id
 			},
@@ -98,7 +98,7 @@ export class ProfileController extends Controller {
 				`${request.user.user.id}.jpg`,
 				15 * 60
 			),
-			inviteUrl: invite ? getInviteUrl(invite.code) : undefined
+			inviteUrl: getInviteUrl(invite.code)
 		};
 	}
 }

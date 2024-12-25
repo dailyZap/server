@@ -78,7 +78,7 @@ export class AuthController extends Controller {
 		const otp = randomInt(100000, 999999).toString();
 		const loginToken = typeid().toString();
 
-		await prisma.user
+		const user = await prisma.user
 			.create({
 				data: {
 					id: typeid(Prefix.USER).toString(),
@@ -97,6 +97,14 @@ export class AuthController extends Controller {
 					return failedUniqueConstraint(409, { reason: `Field not unique`, field });
 				}
 			});
+		
+		await prisma.invite.create({
+			data: {
+				id: typeid(Prefix.INVITE).toString(),
+				userId: user.id,
+				code: typeid().toString()
+			}
+		});
 
 		await mailer
 			.sendMail({
