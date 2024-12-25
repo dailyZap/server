@@ -155,7 +155,7 @@ export class ZapController extends Controller {
 					content: `${request.user.user.firstName} has uploaded a new Zap!`,
 					targetId: id,
 					deviceToken: friend.deviceToken!
-				} as const)
+				}) as const
 		);
 
 		await prisma.notification.createMany({

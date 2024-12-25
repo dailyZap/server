@@ -97,7 +97,7 @@ export class AuthController extends Controller {
 					return failedUniqueConstraint(409, { reason: `Field not unique`, field });
 				}
 			});
-		
+
 		await prisma.invite.create({
 			data: {
 				id: typeid(Prefix.INVITE).toString(),
