@@ -1,15 +1,15 @@
-version: "3.9"
-
 services:
   homeserver:
     build:
       context: .
       dockerfile: Dockerfile
+    profiles: ["prod"]
     ports:
       - ${PORT}:80
     env_file: .env
   postgres:
     image: postgres:16
+    profiles: ["prod", "dev"]
     ports:
       - ${POSTGRES_PORT}:5432
     volumes:
@@ -17,6 +17,7 @@ services:
     env_file: .env
   minio:
     image: minio/minio:RELEASE.2024-09-13T20-26-02Z
+    profiles: ["prod", "dev"]
     ports:
       - ${S3_PORT}:9000
       - ${MINIO_CONSOLE_PORT}:9001
