@@ -22,6 +22,7 @@ import {
 import { v7 } from "uuid";
 import { fromUUID, typeid } from "typeid-js";
 import { Region } from "../../../enums/Region";
+import { sendNotifications } from "../../../libs/push-gateway";
 
 interface ZapUploadInfo {
 	zapId: string;
@@ -119,6 +120,54 @@ export class ZapController extends Controller {
 			},
 			data: {
 				uploaded: true
+			}
+		});
+
+		const friends = await prisma.user.findMany({
+			where: {
+				deviceToken: {
+					not: null
+				},
+				OR: [
+					{
+						friendsWith: {
+							some: {
+								receiverId: request.user.user.id
+							}
+						},
+						friendsOf: {
+							some: {
+								senderId: request.user.user.id
+							}
+						}
+					}
+				]
+			}
+		});
+
+		const notifications = friends.map(
+			(friend) =>
+				({
+					id: typeid(Prefix.NOTIFICATION).toString(),
+					userId: friend.id,
+					type: "NEW_DAILY_ZAP",
+					title: "New Zap",
+					content: `${request.user.user.firstName} has uploaded a new Zap!`,
+					targetId: id,
+					deviceToken: friend.deviceToken!
+				} as const)
+		);
+
+		await prisma.notification.createMany({
+			data: notifications
+		});
+
+		await sendNotifications({
+			body: {
+				notifications: notifications.map((notification) => ({
+					notificationId: notification.id,
+					deviceToken: notification.deviceToken
+				}))
 			}
 		});
 	}
