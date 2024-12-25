@@ -20,7 +20,7 @@
 		"uuid": "11.0.0-0"
 	},
 	"scripts": {
-		"start": "concurrently \"nodemon\" \"nodemon -x tsoa spec-and-routes\"",
+		"start": "NODE_ENV=development concurrently \"nodemon\" \"nodemon -x tsoa spec-and-routes\"",
 		"build": "tsoa spec-and-routes && tsc",
 		"format": "prettier --write .",
 		"getPGApi": "./get-push-gateway-api-schema.sh",
