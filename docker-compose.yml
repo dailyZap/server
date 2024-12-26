@@ -7,6 +7,12 @@ services:
     ports:
       - ${PORT}:80
     env_file: .env
+  smtp4dev:
+    image: rnwood/smtp4dev:v3
+    profiles: ["dev"]
+    ports:
+      - "3010:80"
+      - "25:25"
   postgres:
     image: postgres:16
     profiles: ["prod", "dev"]
